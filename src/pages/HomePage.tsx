@@ -1,42 +1,19 @@
-import type { PortalNews, PortalNotice } from "../types";
+import type { PortalNews } from "../types";
 import { ru } from "../content/ru";
 import { StateCard } from "../components/StateCard";
 
 type HomePageProps = {
-  notice: PortalNotice | null;
   news: PortalNews[];
   username: string;
 };
 
-export function HomePage({ notice, news, username }: HomePageProps) {
+export function HomePage({ news, username }: HomePageProps) {
   return (
     <>
       <section className="welcome-card">
         <p className="eyebrow">{ru.home.welcomeEyebrow}</p>
         <h2>{username}</h2>
         <p>{ru.home.welcomeText}</p>
-      </section>
-
-      <section className="panel">
-        <div className="panel__header">
-          <div>
-            <p className="eyebrow">{ru.home.noticeEyebrow}</p>
-            <h3>{ru.home.noticeTitle}</h3>
-          </div>
-          {notice ? (
-            <span className="pill">
-              {ru.home.noticeUpdatedPrefix} {formatDate(notice.updatedAt)}
-            </span>
-          ) : null}
-        </div>
-        {notice ? (
-          <article className="notice-card">
-            <h4>{notice.title}</h4>
-            <p>{notice.body}</p>
-          </article>
-        ) : (
-          <StateCard title={ru.home.noticeEmptyTitle} text={ru.home.noticeEmptyText} />
-        )}
       </section>
 
       <section className="panel">

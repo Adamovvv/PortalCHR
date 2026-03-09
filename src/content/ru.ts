@@ -1,67 +1,43 @@
 export const ru = {
   app: {
-    title: "Портал Республики",
-    subtitle: "Единое пространство новостей, объявлений и сервиса",
-    brand: "Мини-апп Telegram",
-    searchLabel: "Поиск по новостям и объявлениям",
-    searchPlaceholder: "Например: дороги, школы, медицина",
-    loadingTitle: "Загрузка",
-    loadingText: "Подключаю Telegram и Supabase...",
-    errorTitle: "Ошибка"
+    title: "\u041f\u043e\u0440\u0442\u0430\u043b \u0420\u0435\u0441\u043f\u0443\u0431\u043b\u0438\u043a\u0438",
+    subtitle: "\u0415\u0434\u0438\u043d\u043e\u0435 \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e \u043d\u043e\u0432\u043e\u0441\u0442\u0435\u0439, \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0439 \u0438 \u0441\u0435\u0440\u0432\u0438\u0441\u0430",
+    searchPlaceholder: "\u041d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: \u0434\u043e\u0440\u043e\u0433\u0438, \u0448\u043a\u043e\u043b\u044b, \u043c\u0435\u0434\u0438\u0446\u0438\u043d\u0430",
+    loadingTitle: "\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430",
+    loadingText: "\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u044e Telegram \u0438 Supabase...",
+    errorTitle: "\u041e\u0448\u0438\u0431\u043a\u0430",
+    openInsideTelegram: "\u041e\u0442\u043a\u0440\u043e\u0439 \u043c\u0438\u043d\u0438-\u0430\u043f\u043f \u0432\u043d\u0443\u0442\u0440\u0438 Telegram, \u0447\u0442\u043e\u0431\u044b \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0434\u0430\u043d\u043d\u044b\u0435 \u043f\u0440\u043e\u0444\u0438\u043b\u044f.",
+    loadFailed: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043f\u043e\u0440\u0442\u0430\u043b.",
+    marqueeFallback: "\u0417\u0434\u0435\u0441\u044c \u0431\u0443\u0434\u0435\u0442 \u043e\u0442\u043e\u0431\u0440\u0430\u0436\u0430\u0442\u044c\u0441\u044f \u0432\u0430\u0436\u043d\u043e\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0434\u043b\u044f \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439 \u043f\u043e\u0440\u0442\u0430\u043b\u0430."
   },
   nav: {
-    home: "Главная",
-    announcements: "Объявления",
-    profile: "Профиль"
+    home: "\u0413\u043b\u0430\u0432\u043d\u0430\u044f",
+    announcements: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
+    profile: "\u041f\u0440\u043e\u0444\u0438\u043b\u044c"
   },
   home: {
-    welcomeEyebrow: "Добро пожаловать",
-    welcomeText: "Здесь собраны важные сообщения администрации, актуальные новости и объявления портала.",
-    noticeEyebrow: "Сообщение администрации",
-    noticeTitle: "Информационное сообщение",
-    noticeEmptyTitle: "Пока пусто",
-    noticeEmptyText: "Администратор еще не публиковал сообщение для пользователей.",
-    newsEyebrow: "Лента",
-    newsTitle: "Актуальные новости",
-    newsCountSuffix: "материалов",
-    newsEmptyTitle: "Новостей нет",
-    newsEmptyText: "Добавь первую новость через /admin или админ-блок профиля.",
-    noticeUpdatedPrefix: "Обновлено"
+    welcomeEyebrow: "\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c",
+    welcomeText: "\u0417\u0434\u0435\u0441\u044c \u0441\u043e\u0431\u0440\u0430\u043d\u044b \u0432\u0430\u0436\u043d\u044b\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438, \u0430\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u043d\u043e\u0432\u043e\u0441\u0442\u0438 \u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f \u043f\u043e\u0440\u0442\u0430\u043b\u0430.",
+    newsEyebrow: "\u041b\u0435\u043d\u0442\u0430",
+    newsTitle: "\u0410\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u043d\u043e\u0432\u043e\u0441\u0442\u0438",
+    newsCountSuffix: "\u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u043e\u0432",
+    newsEmptyTitle: "\u041d\u043e\u0432\u043e\u0441\u0442\u0435\u0439 \u043d\u0435\u0442",
+    newsEmptyText: "\u041d\u043e\u0432\u0430\u044f \u043b\u0435\u043d\u0442\u0430 \u043f\u043e\u044f\u0432\u0438\u0442\u0441\u044f \u043f\u043e\u0441\u043b\u0435 \u043f\u0435\u0440\u0432\u043e\u0439 \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438."
   },
   announcements: {
-    eyebrow: "Раздел",
-    title: "Объявления",
-    countSuffix: "записей",
-    badge: "Объявление",
-    emptyTitle: "Нет объявлений",
-    emptyText: "Список объявлений появится после первой публикации."
+    eyebrow: "\u0420\u0430\u0437\u0434\u0435\u043b",
+    title: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
+    countSuffix: "\u0437\u0430\u043f\u0438\u0441\u0435\u0439",
+    badge: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
+    emptyTitle: "\u041d\u0435\u0442 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0439",
+    emptyText: "\u0421\u043f\u0438\u0441\u043e\u043a \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0439 \u043f\u043e\u044f\u0432\u0438\u0442\u0441\u044f \u043f\u043e\u0441\u043b\u0435 \u043f\u0435\u0440\u0432\u043e\u0439 \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438."
   },
   profile: {
-    fallbackName: "Профиль",
-    missingUsername: "username отсутствует",
-    telegramId: "ID Telegram",
-    adminBadge: "Админ",
-    defaultTitle: "Стандартный профиль",
-    defaultText: "Профиль создается автоматически из данных Telegram. Админ-инструменты доступны только ID из TELEGRAM_ADMIN_IDS.",
-    noticeEyebrow: "Админка",
-    noticeTitle: "Сообщение для пользователей",
-    noticeTitlePlaceholder: "Заголовок сообщения",
-    noticeBodyPlaceholder: "Текст сообщения для пользователей портала",
-    noticeSubmit: "Сохранить сообщение",
-    newsEyebrow: "Админка",
-    newsTitle: "Добавить новость",
-    newsTitlePlaceholder: "Заголовок новости",
-    newsCategoryPlaceholder: "Категория",
-    newsBodyPlaceholder: "Краткое описание новости",
-    newsSubmit: "Опубликовать новость",
-    announcementEyebrow: "Админка",
-    announcementTitle: "Добавить объявление",
-    announcementTitlePlaceholder: "Заголовок объявления",
-    announcementBodyPlaceholder: "Текст объявления",
-    announcementSubmit: "Опубликовать объявление"
+    fallbackName: "\u041f\u0440\u043e\u0444\u0438\u043b\u044c",
+    missingUsername: "username \u043e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442",
+    telegramId: "ID Telegram"
   },
   common: {
-    telegramUserFallback: "Пользователь Telegram",
-    noticeCategory: "Новости"
+    telegramUserFallback: "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c Telegram"
   }
 } as const;

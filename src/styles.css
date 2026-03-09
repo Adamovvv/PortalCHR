@@ -100,7 +100,8 @@ svg {
 .panel,
 .profile-card,
 .state-card,
-.bottom-nav {
+.bottom-nav,
+.marquee-card {
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
   background: var(--surface);
@@ -151,17 +152,7 @@ svg {
   font-weight: 700;
 }
 
-.primary-button {
-  border: none;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #ff7b4f, var(--accent));
-  color: white;
-  padding: 14px 16px;
-  font-weight: 700;
-}
-
 .search-card,
-.brand-lockup,
 .panel__header,
 .content-card__meta,
 .profile-card {
@@ -176,19 +167,38 @@ svg {
   flex-direction: column;
 }
 
-.brand-lockup {
-  justify-content: flex-start;
+.search-card--compact {
+  padding: 12px;
 }
 
-.logo-mark {
-  width: 54px;
-  height: 54px;
-  display: grid;
-  place-items: center;
-  border-radius: 18px;
-  background: linear-gradient(145deg, rgba(233, 83, 31, 0.18), rgba(233, 83, 31, 0.4));
+.marquee-card {
+  overflow: hidden;
+  border-radius: 22px;
+  padding: 12px 0;
+}
+
+.marquee-track {
+  display: flex;
+  gap: 32px;
+  min-width: max-content;
+  white-space: nowrap;
   color: var(--accent);
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 700;
+  animation: marquee-scroll 24s linear infinite;
+}
+
+.marquee-track span {
+  padding-left: 18px;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .search-field {
@@ -234,10 +244,6 @@ svg {
   color: var(--accent);
   font-size: 12px;
   font-weight: 700;
-}
-
-.pill--accent {
-  min-width: 74px;
 }
 
 .avatar {

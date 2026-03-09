@@ -1,11 +1,5 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import {
-  createAnnouncement,
-  createNews,
-  loadContent,
-  syncProfile,
-  updateNotice
-} from "./lib/api";
+import { useEffect, useMemo, useState } from "react";
+import { loadContent, syncProfile } from "./lib/api";
 import { getInitData, getInitialTheme, getTelegramUser, setupTelegramChrome } from "./lib/telegram";
 import type { PortalContent, ThemeMode } from "./types";
 import { ru } from "./content/ru";
@@ -36,18 +30,13 @@ export function App() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [noticeDraft, setNoticeDraft] = useState({ title: "", body: "" });
-  const [newsDraft, setNewsDraft] = useState<{ title: string; summary: string; category: string }>({
-    title: "",
-    summary: "",
-    category: ru.common.noticeCategory
-  });
-  const [announcementDraft, setAnnouncementDraft] = useState({ title: "", body: "" });
 
   const initData = getInitData();
   const telegramUser = getTelegramUser();
   const displayName = [telegramUser?.first_name, telegramUser?.last_name].filter(Boolean).join(" ");
+  const marqueeText = content.notice?.title
+    ? `${content.notice.title}: ${content.notice.body}`
+    : ru.app.marqueeFallback;
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -70,21 +59,14 @@ export function App() {
         setError(null);
 
         if (!initData) {
-          throw new Error("Открой мини-апп внутри Telegram, чтобы загрузить данные профиля.");
+          throw new Error(ru.app.openInsideTelegram);
         }
 
         const profile = await syncProfile(initData);
         const portalContent = await loadContent(initData);
         setContent({ ...portalContent, profile });
-
-        if (portalContent.notice) {
-          setNoticeDraft({
-            title: portalContent.notice.title,
-            body: portalContent.notice.body
-          });
-        }
       } catch (requestError) {
-        setError(requestError instanceof Error ? requestError.message : "Не удалось загрузить портал.");
+        setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
       } finally {
         setLoading(false);
       }
@@ -107,70 +89,6 @@ export function App() {
     });
   }, [content.announcements, query]);
 
-  const profile = content.profile;
-  const isAdmin = profile?.isAdmin ?? false;
-
-  async function handleNoticeSubmit(event: FormEvent) {
-    event.preventDefault();
-    if (!noticeDraft.title.trim() || !noticeDraft.body.trim()) {
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const notice = await updateNotice(initData, noticeDraft.title.trim(), noticeDraft.body.trim());
-      setContent((current) => ({ ...current, notice }));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleNewsSubmit(event: FormEvent) {
-    event.preventDefault();
-    if (!newsDraft.title.trim() || !newsDraft.summary.trim()) {
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const news = await createNews(
-        initData,
-        newsDraft.title.trim(),
-        newsDraft.summary.trim(),
-        newsDraft.category.trim() || ru.common.noticeCategory
-      );
-      setContent((current) => ({ ...current, news: [news, ...current.news] }));
-      setNewsDraft({ title: "", summary: "", category: ru.common.noticeCategory });
-      setActiveTab("home");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleAnnouncementSubmit(event: FormEvent) {
-    event.preventDefault();
-    if (!announcementDraft.title.trim() || !announcementDraft.body.trim()) {
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const announcement = await createAnnouncement(
-        initData,
-        announcementDraft.title.trim(),
-        announcementDraft.body.trim()
-      );
-      setContent((current) => ({
-        ...current,
-        announcements: [announcement, ...current.announcements]
-      }));
-      setAnnouncementDraft({ title: "", body: "" });
-      setActiveTab("announcements");
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
     <div className="app-shell">
       <div className="ambient ambient-left" />
@@ -183,16 +101,15 @@ export function App() {
           </div>
         </header>
 
-        <section className="search-card">
-          <div className="brand-lockup">
-            <div className="logo-mark">PR</div>
-            <div>
-              <strong>{ru.app.title}</strong>
-              <p>{ru.app.brand}</p>
-            </div>
+        <section className="marquee-card" aria-label="portal-notice">
+          <div className="marquee-track">
+            <span>{marqueeText}</span>
+            <span>{marqueeText}</span>
           </div>
+        </section>
+
+        <section className="search-card search-card--compact">
           <label className="search-field">
-            <span>{ru.app.searchLabel}</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -208,7 +125,6 @@ export function App() {
           <>
             {activeTab === "home" ? (
               <HomePage
-                notice={content.notice}
                 news={filteredNews}
                 username={displayName || ru.common.telegramUserFallback}
               />
@@ -218,22 +134,7 @@ export function App() {
               <AnnouncementsPage announcements={filteredAnnouncements} />
             ) : null}
 
-            {activeTab === "profile" ? (
-              <ProfilePage
-                profile={profile}
-                isAdmin={isAdmin}
-                saving={saving}
-                noticeDraft={noticeDraft}
-                newsDraft={newsDraft}
-                announcementDraft={announcementDraft}
-                onNoticeDraftChange={setNoticeDraft}
-                onNewsDraftChange={setNewsDraft}
-                onAnnouncementDraftChange={setAnnouncementDraft}
-                onNoticeSubmit={handleNoticeSubmit}
-                onNewsSubmit={handleNewsSubmit}
-                onAnnouncementSubmit={handleAnnouncementSubmit}
-              />
-            ) : null}
+            {activeTab === "profile" ? <ProfilePage profile={content.profile} /> : null}
           </>
         ) : null}
       </main>
