@@ -373,7 +373,7 @@ svg {
 
   /* Фиксированная высота */
   height: 68px;
-  padding: 0 4px;
+  padding: 4px;
 
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.88);
