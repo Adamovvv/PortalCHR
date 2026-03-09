@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { createAnnouncement, loadContent, syncProfile } from "./lib/api";
+import { createAnnouncement, deleteAnnouncement, loadContent, syncProfile } from "./lib/api";
 import { getInitData, getInitialTheme, getTelegramUser, setupTelegramChrome } from "./lib/telegram";
 import type { PortalAnnouncementCategory, PortalContent, ThemeMode } from "./types";
 import { ru } from "./content/ru";
@@ -15,7 +15,8 @@ const emptyContent: PortalContent = {
   profile: null,
   notice: null,
   news: [],
-  announcements: []
+  announcements: [],
+  myAnnouncements: []
 };
 
 const tabs: Array<{ key: Exclude<ScreenKey, "create-announcement">; label: string }> = [
@@ -116,14 +117,28 @@ export function App() {
       });
       setContent((current) => ({
         ...current,
-        announcements: [created, ...current.announcements]
+        myAnnouncements: [created, ...current.myAnnouncements]
       }));
       setAnnouncementDraft({ title: "", category: "other", body: "", price: "" });
-      setActiveScreen("announcements");
+      setActiveScreen("profile");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
     } finally {
       setSubmittingAnnouncement(false);
+    }
+  }
+
+  async function handleAnnouncementDelete(announcementId: string) {
+    try {
+      setError(null);
+      await deleteAnnouncement(initData, announcementId);
+      setContent((current) => ({
+        ...current,
+        myAnnouncements: current.myAnnouncements.filter((item) => item.id !== announcementId),
+        announcements: current.announcements.filter((item) => item.id !== announcementId)
+      }));
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
     }
   }
 
@@ -156,7 +171,13 @@ export function App() {
               />
             ) : null}
 
-            {activeScreen === "profile" ? <ProfilePage profile={content.profile} /> : null}
+            {activeScreen === "profile" ? (
+              <ProfilePage
+                profile={content.profile}
+                announcements={content.myAnnouncements}
+                onDeleteAnnouncement={handleAnnouncementDelete}
+              />
+            ) : null}
 
             {activeScreen === "create-announcement" ? (
               <CreateAnnouncementPage

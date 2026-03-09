@@ -34,16 +34,24 @@ create table if not exists public.announcements (
   body text not null,
   category text not null default 'other',
   author_name text not null default 'Telegram User',
+  author_username text,
   price numeric(12,2),
   is_free boolean not null default true,
+  status text not null default 'pending',
+  moderated_by bigint,
+  moderated_at timestamptz,
   author_telegram_id bigint not null,
   published_at timestamptz not null default now()
 );
 
 alter table public.announcements add column if not exists category text not null default 'other';
 alter table public.announcements add column if not exists author_name text not null default 'Telegram User';
+alter table public.announcements add column if not exists author_username text;
 alter table public.announcements add column if not exists price numeric(12,2);
 alter table public.announcements add column if not exists is_free boolean not null default true;
+alter table public.announcements add column if not exists status text not null default 'pending';
+alter table public.announcements add column if not exists moderated_by bigint;
+alter table public.announcements add column if not exists moderated_at timestamptz;
 
 create or replace function public.set_updated_at()
 returns trigger

@@ -13,16 +13,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const user = requireTelegramUser(initData);
     const supabase = getSupabaseAdmin();
 
-    const [profileResult, noticeResult, newsResult, announcementsResult] = await Promise.all([
+    const [profileResult, noticeResult, newsResult, announcementsResult, myAnnouncementsResult] = await Promise.all([
       supabase.from("profiles").select("*").eq("telegram_id", user.id).maybeSingle(),
       supabase.from("portal_notice").select("*").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
       supabase.from("news").select("*").order("published_at", { ascending: false }).limit(20),
-      supabase.from("announcements").select("*").order("published_at", { ascending: false }).limit(30)
+      supabase.from("announcements").select("*").eq("status", "approved").order("published_at", { ascending: false }).limit(30),
+      supabase.from("announcements").select("*").eq("author_telegram_id", user.id).order("published_at", { ascending: false }).limit(30)
     ]);
 
-    if (profileResult.error || noticeResult.error || newsResult.error || announcementsResult.error) {
+    if (
+      profileResult.error ||
+      noticeResult.error ||
+      newsResult.error ||
+      announcementsResult.error ||
+      myAnnouncementsResult.error
+    ) {
       throw new Error("Failed to load portal content from Supabase");
     }
+
+    const mapAnnouncement = (item: any) => ({
+      id: item.id,
+      title: item.title,
+      body: item.body,
+      category: item.category,
+      authorName: item.author_name,
+      authorUsername: item.author_username,
+      authorTelegramId: item.author_telegram_id,
+      price: item.price,
+      status: item.status,
+      publishedAt: item.published_at
+    });
 
     res.status(200).json({
       profile: profileResult.data
@@ -50,15 +70,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         category: item.category,
         publishedAt: item.published_at
       })),
-      announcements: (announcementsResult.data ?? []).map((item) => ({
-        id: item.id,
-        title: item.title,
-        body: item.body,
-        category: item.category,
-        authorName: item.author_name,
-        price: item.price,
-        publishedAt: item.published_at
-      }))
+      announcements: (announcementsResult.data ?? []).map(mapAnnouncement),
+      myAnnouncements: (myAnnouncementsResult.data ?? []).map(mapAnnouncement)
     });
   } catch (error) {
     handleApiError(res, error);

@@ -31,7 +31,7 @@ export function CreateAnnouncementPage({
     <section className="panel panel--flat page-section">
       <div className="panel__header panel__header--stack">
         <div>
-          <p className="eyebrow">{ru.announcements.addButton}</p>
+          <p className="eyebrow">{ru.createAnnouncement.eyebrow}</p>
           <h3>{ru.createAnnouncement.title}</h3>
         </div>
       </div>

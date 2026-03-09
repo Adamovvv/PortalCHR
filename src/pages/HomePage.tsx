@@ -11,13 +11,10 @@ export function HomePage({ news, username }: HomePageProps) {
   return (
     <>
       <section className="hero hero--compact">
-        <div className="panel__header">
-          <div>
-            <p className="eyebrow">{ru.home.welcomeEyebrow}</p>
-            <h2>{username}</h2>
-            <p className="hero__text">{ru.home.welcomeText}</p>
-          </div>
-          <span className="pill">{news.length} {ru.home.newsCountSuffix}</span>
+        <div>
+          <p className="eyebrow">{ru.home.welcomeEyebrow}</p>
+          <h2>{username}</h2>
+          <p className="hero__text">{ru.app.subtitle}</p>
         </div>
       </section>
 
@@ -27,6 +24,7 @@ export function HomePage({ news, username }: HomePageProps) {
             <p className="eyebrow">{ru.home.newsEyebrow}</p>
             <h3>{ru.home.newsTitle}</h3>
           </div>
+          <span className="pill">{news.length} {ru.home.newsCountSuffix}</span>
         </div>
         <div className="stack">
           {news.length ? (

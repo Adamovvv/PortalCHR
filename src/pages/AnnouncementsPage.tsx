@@ -26,6 +26,7 @@ export function AnnouncementsPage({ announcements, onCreateAnnouncement }: Annou
         {announcements.length ? (
           announcements.map((item) => {
             const categoryLabel = announcementCategoryOptions.find((option) => option.value === item.category)?.label ?? item.category;
+            const writeUrl = item.authorUsername ? `https://t.me/${item.authorUsername}` : null;
             return (
               <article className="content-card content-card--announcement" key={item.id}>
                 <div className="content-card__meta">
@@ -38,6 +39,11 @@ export function AnnouncementsPage({ announcements, onCreateAnnouncement }: Annou
                   <span>{item.authorName}</span>
                   <strong>{item.price !== null ? `${item.price} ₽` : ru.announcements.freeLabel}</strong>
                 </div>
+                {writeUrl ? (
+                  <a className="secondary-action link-action" href={writeUrl} target="_blank" rel="noreferrer">
+                    {ru.announcements.writeButton}
+                  </a>
+                ) : null}
               </article>
             );
           })

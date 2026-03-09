@@ -71,3 +71,10 @@ export async function createAnnouncement(
     body: JSON.stringify({ initData, ...payload })
   });
 }
+
+export async function deleteAnnouncement(initData: string, announcementId: string): Promise<{ id: string }> {
+  return request<{ id: string }>("/api/announcement/delete", {
+    method: "POST",
+    body: JSON.stringify({ initData, announcementId })
+  });
+}

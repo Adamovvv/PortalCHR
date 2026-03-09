@@ -53,9 +53,9 @@ svg {
   position: relative;
   min-height: 100dvh;
   padding:
-    max(20px, env(safe-area-inset-top))
+    calc(env(safe-area-inset-top) + 18px)
     16px
-    calc(110px + max(16px, env(safe-area-inset-bottom)))
+    calc(110px + max(18px, env(safe-area-inset-bottom)))
     16px;
   overflow-x: hidden;
 }
@@ -364,4 +364,12 @@ svg {
   display: flex;
   gap: 10px;
   justify-content: space-between;
+}
+.link-action {
+  text-decoration: none;
+  text-align: center;
+}
+
+.subtle-copy--empty {
+  margin: 4px 0 0;
 }

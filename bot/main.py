@@ -2,6 +2,7 @@
 import logging
 import os
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from supabase import Client, create_client
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, WebAppInfo
@@ -59,9 +60,7 @@ def get_supabase() -> Client:
 
 
 def get_keyboard(admin: bool) -> InlineKeyboardMarkup:
-    rows = [
-        [InlineKeyboardButton("Открыть портал", web_app=WebAppInfo(url=get_mini_app_url("/")))]
-    ]
+    rows = [[InlineKeyboardButton("Открыть портал", web_app=WebAppInfo(url=get_mini_app_url("/")))]]
     if admin:
         rows.append(
             [
@@ -69,7 +68,6 @@ def get_keyboard(admin: bool) -> InlineKeyboardMarkup:
                 InlineKeyboardButton("Новая новость", callback_data="admin:news"),
             ]
         )
-        rows.append([InlineKeyboardButton("Новое объявление", callback_data="admin:announcement")])
     return InlineKeyboardMarkup(rows)
 
 
@@ -108,10 +106,54 @@ async def admin_action(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     prompts = {
         "notice": "Введи заголовок для информационного сообщения.",
         "news": "Введи заголовок новости.",
-        "announcement": "Введи заголовок объявления.",
     }
     await query.answer()
     await query.message.reply_text(prompts[mode])
+
+
+async def moderate_announcement(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    if query is None:
+        return
+
+    user_id = query.from_user.id if query.from_user else None
+    if not is_admin(user_id):
+        await query.answer("Нет доступа", show_alert=True)
+        return
+
+    _, action, announcement_id = (query.data or "").split(":", 2)
+    supabase = get_supabase()
+    response = (
+        supabase.table("announcements")
+        .select("id,title,author_telegram_id,status")
+        .eq("id", announcement_id)
+        .single()
+        .execute()
+    )
+    announcement = response.data
+    if not announcement:
+        await query.answer("Объявление не найдено", show_alert=True)
+        return
+
+    new_status = "approved" if action == "approve" else "rejected"
+    update_response = (
+        supabase.table("announcements")
+        .update({"status": new_status, "moderated_by": user_id, "moderated_at": datetime.now(timezone.utc).isoformat()})
+        .eq("id", announcement_id)
+        .execute()
+    )
+    if update_response.data is None:
+        await query.answer("Не удалось обновить статус", show_alert=True)
+        return
+
+    author_id = announcement.get("author_telegram_id")
+    status_text = "опубликовано" if new_status == "approved" else "отклонено"
+    await context.bot.send_message(
+        chat_id=author_id,
+        text=f"Твое объявление \"{announcement.get('title')}\" {status_text}."
+    )
+    await query.answer("Готово")
+    await query.edit_message_reply_markup(reply_markup=None)
 
 
 async def admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -157,7 +199,7 @@ async def admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         if not response.data:
             raise RuntimeError("Не удалось сохранить сообщение.")
         await update.effective_message.reply_text("Информационное сообщение обновлено.")
-    elif draft.mode == "news":
+    else:
         response = supabase.table("news").insert(
             {
                 "title": draft.title,
@@ -169,17 +211,6 @@ async def admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         if not response.data:
             raise RuntimeError("Не удалось создать новость.")
         await update.effective_message.reply_text("Новость опубликована.")
-    else:
-        response = supabase.table("announcements").insert(
-            {
-                "title": draft.title,
-                "body": draft.body,
-                "author_telegram_id": user.id,
-            }
-        ).execute()
-        if not response.data:
-            raise RuntimeError("Не удалось создать объявление.")
-        await update.effective_message.reply_text("Объявление опубликовано.")
 
     context.user_data.pop("admin_draft", None)
 
@@ -193,6 +224,7 @@ def build_application() -> Application:
     application = Application.builder().token(required("TELEGRAM_BOT_TOKEN")).post_init(post_init).build()
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("admin", admin_command))
+    application.add_handler(CallbackQueryHandler(moderate_announcement, pattern=r"^moderate:"))
     application.add_handler(CallbackQueryHandler(admin_action, pattern=r"^admin:"))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, admin_text))
     return application

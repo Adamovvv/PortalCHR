@@ -8,9 +8,16 @@ export const announcementCategoryOptions = [
   { value: "other", label: "Другое" }
 ] as const;
 
+export const announcementStatusLabels = {
+  pending: "На модерации",
+  approved: "Опубликовано",
+  rejected: "Отклонено"
+} as const;
+
 export const ru = {
   app: {
     title: "Портал Республики",
+    subtitle: "Единое пространство новостей, объявлений и сервиса",
     searchPlaceholder: "Поиск по объявлениям и новостям",
     loadingTitle: "Загрузка",
     loadingText: "Подключаю Telegram и Supabase...",
@@ -24,8 +31,8 @@ export const ru = {
     profile: "Профиль"
   },
   home: {
-    welcomeEyebrow: "Добро пожаловать",
-    welcomeText: "Новости и новые публикации портала собраны в одном месте.",
+    welcomeEyebrow: "Главная",
+    welcomeText: "Единое пространство новостей, объявлений и сервиса",
     newsEyebrow: "Лента",
     newsTitle: "Актуальные новости",
     newsCountSuffix: "материалов",
@@ -33,19 +40,20 @@ export const ru = {
     newsEmptyText: "Новая лента появится после первой публикации."
   },
   announcements: {
-    eyebrow: "Объявления",
-    title: "Лента объявлений",
+    eyebrow: "Объявлении",
+    title: "Объявлении",
     countSuffix: "записей",
     emptyTitle: "Объявлений пока нет",
     emptyText: "Стань первым пользователем, кто разместит объявление.",
     addButton: "Добавить объявление",
     oneFree: "Одно объявление бесплатно",
-    priceLabel: "Цена",
-    freeLabel: "Бесплатно"
+    freeLabel: "Бесплатно",
+    writeButton: "Написать"
   },
   createAnnouncement: {
-    title: "Новое объявление",
-    subtitle: "Одно бесплатное объявление доступно каждому пользователю.",
+    eyebrow: "Объявлении",
+    title: "Добавить объявление",
+    subtitle: "После отправки объявление уходит администратору на модерацию.",
     nameLabel: "Название",
     namePlaceholder: "Например: iPhone 14, услуги электрика, аренда квартиры",
     categoryLabel: "Категория",
@@ -53,13 +61,18 @@ export const ru = {
     descriptionPlaceholder: "Кратко опиши объявление, состояние, условия и контакты",
     priceLabel: "Цена",
     pricePlaceholder: "Если цена не нужна, оставь пустым",
-    submit: "Опубликовать",
+    submit: "Отправить на модерацию",
     cancel: "Назад"
   },
   profile: {
+    eyebrow: "Мой профиль",
+    title: "Мой профиль",
     fallbackName: "Профиль",
     missingUsername: "username отсутствует",
-    telegramId: "ID Telegram"
+    telegramId: "ID Telegram",
+    myAnnouncements: "Мои объявления",
+    myAnnouncementsEmpty: "У тебя пока нет объявлений.",
+    deleteButton: "Удалить"
   },
   common: {
     telegramUserFallback: "Пользователь Telegram"

@@ -33,13 +33,18 @@ export type PortalAnnouncementCategory =
   | "jobs"
   | "other";
 
+export type PortalAnnouncementStatus = "pending" | "approved" | "rejected";
+
 export type PortalAnnouncement = {
   id: string;
   title: string;
   body: string;
   category: PortalAnnouncementCategory;
   authorName: string;
+  authorUsername: string | null;
+  authorTelegramId: number;
   price: number | null;
+  status: PortalAnnouncementStatus;
   publishedAt: string;
 };
 
@@ -48,6 +53,7 @@ export type PortalContent = {
   notice: PortalNotice | null;
   news: PortalNews[];
   announcements: PortalAnnouncement[];
+  myAnnouncements: PortalAnnouncement[];
 };
 
 export type TelegramUser = {
