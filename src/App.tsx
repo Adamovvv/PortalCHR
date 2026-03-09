@@ -7,22 +7,14 @@ import {
   updateNotice
 } from "./lib/api";
 import { getInitData, getInitialTheme, getTelegramUser, setupTelegramChrome } from "./lib/telegram";
-import type {
-  PortalAnnouncement,
-  PortalContent,
-  PortalNews,
-  PortalNotice,
-  PortalProfile,
-  ThemeMode
-} from "./types";
+import type { PortalContent, ThemeMode } from "./types";
+import { ru } from "./content/ru";
+import { StateCard } from "./components/StateCard";
+import { HomePage } from "./pages/HomePage";
+import { AnnouncementsPage } from "./pages/AnnouncementsPage";
+import { ProfilePage } from "./pages/ProfilePage";
 
 type TabKey = "home" | "announcements" | "profile";
-
-const tabs: Array<{ key: TabKey; label: string; icon: string }> = [
-  { key: "home", label: "Главная", icon: "⌂" },
-  { key: "announcements", label: "Объявления", icon: "≡" },
-  { key: "profile", label: "Профиль", icon: "○" }
-];
 
 const emptyContent: PortalContent = {
   profile: null,
@@ -30,6 +22,12 @@ const emptyContent: PortalContent = {
   news: [],
   announcements: []
 };
+
+const tabs: Array<{ key: TabKey; label: string }> = [
+  { key: "home", label: ru.nav.home },
+  { key: "announcements", label: ru.nav.announcements },
+  { key: "profile", label: ru.nav.profile }
+];
 
 export function App() {
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme());
@@ -40,7 +38,11 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [noticeDraft, setNoticeDraft] = useState({ title: "", body: "" });
-  const [newsDraft, setNewsDraft] = useState({ title: "", summary: "", category: "Новости" });
+  const [newsDraft, setNewsDraft] = useState<{ title: string; summary: string; category: string }>({
+    title: "",
+    summary: "",
+    category: ru.common.noticeCategory
+  });
   const [announcementDraft, setAnnouncementDraft] = useState({ title: "", body: "" });
 
   const initData = getInitData();
@@ -135,10 +137,10 @@ export function App() {
         initData,
         newsDraft.title.trim(),
         newsDraft.summary.trim(),
-        newsDraft.category.trim() || "Новости"
+        newsDraft.category.trim() || ru.common.noticeCategory
       );
       setContent((current) => ({ ...current, news: [news, ...current.news] }));
-      setNewsDraft({ title: "", summary: "", category: "Новости" });
+      setNewsDraft({ title: "", summary: "", category: ru.common.noticeCategory });
       setActiveTab("home");
     } finally {
       setSaving(false);
@@ -176,55 +178,48 @@ export function App() {
       <main className="app-frame">
         <header className="hero">
           <div>
-            <p className="eyebrow">Портал Республики</p>
-            <h1>Единое пространство новостей, объявлений и сервиса</h1>
+            <p className="eyebrow">{ru.app.title}</p>
+            <h1>{ru.app.subtitle}</h1>
           </div>
-          <button
-            className="theme-toggle"
-            type="button"
-            onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
-          >
-            {theme === "dark" ? "Светлая тема" : "Темная тема"}
-          </button>
         </header>
 
         <section className="search-card">
           <div className="brand-lockup">
             <div className="logo-mark">PR</div>
             <div>
-              <strong>Портал Республики</strong>
-              <p>Мини-апп Telegram</p>
+              <strong>{ru.app.title}</strong>
+              <p>{ru.app.brand}</p>
             </div>
           </div>
           <label className="search-field">
-            <span>Поиск по новостям и объявлениям</span>
+            <span>{ru.app.searchLabel}</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Например: дороги, школы, медицина"
+              placeholder={ru.app.searchPlaceholder}
             />
           </label>
         </section>
 
-        {loading ? <StateCard title="Загрузка" text="Подключаю Telegram и Supabase..." /> : null}
-        {error ? <StateCard title="Ошибка" text={error} tone="danger" /> : null}
+        {loading ? <StateCard title={ru.app.loadingTitle} text={ru.app.loadingText} /> : null}
+        {error ? <StateCard title={ru.app.errorTitle} text={error} tone="danger" /> : null}
 
         {!loading && !error ? (
           <>
             {activeTab === "home" ? (
-              <HomeTab
+              <HomePage
                 notice={content.notice}
                 news={filteredNews}
-                username={displayName || "Пользователь Telegram"}
+                username={displayName || ru.common.telegramUserFallback}
               />
             ) : null}
 
             {activeTab === "announcements" ? (
-              <AnnouncementsTab announcements={filteredAnnouncements} />
+              <AnnouncementsPage announcements={filteredAnnouncements} />
             ) : null}
 
             {activeTab === "profile" ? (
-              <ProfileTab
+              <ProfilePage
                 profile={profile}
                 isAdmin={isAdmin}
                 saving={saving}
@@ -243,7 +238,7 @@ export function App() {
         ) : null}
       </main>
 
-      <nav className="bottom-nav" aria-label="Навигация">
+      <nav className="bottom-nav" aria-label={ru.app.title}>
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -251,7 +246,9 @@ export function App() {
             className={`bottom-nav__item ${activeTab === tab.key ? "is-active" : ""}`}
             onClick={() => setActiveTab(tab.key)}
           >
-            <span className="bottom-nav__icon">{tab.icon}</span>
+            <span className="bottom-nav__icon">
+              <NavIcon tab={tab.key} active={activeTab === tab.key} />
+            </span>
             <span>{tab.label}</span>
           </button>
         ))}
@@ -260,262 +257,32 @@ export function App() {
   );
 }
 
-function HomeTab({
-  notice,
-  news,
-  username
-}: {
-  notice: PortalNotice | null;
-  news: PortalNews[];
-  username: string;
-}) {
-  return (
-    <>
-      <section className="welcome-card">
-        <p className="eyebrow">Добро пожаловать</p>
-        <h2>{username}</h2>
-        <p>Здесь собраны важные сообщения администрации, актуальные новости и объявления портала.</p>
-      </section>
+function NavIcon({ tab, active }: { tab: TabKey; active: boolean }) {
+  const color = active ? "currentColor" : "currentColor";
 
-      <section className="panel">
-        <div className="panel__header">
-          <div>
-            <p className="eyebrow">Сообщение администрации</p>
-            <h3>Информационное сообщение</h3>
-          </div>
-          {notice ? <span className="pill">Обновлено {formatDate(notice.updatedAt)}</span> : null}
-        </div>
-        {notice ? (
-          <article className="notice-card">
-            <h4>{notice.title}</h4>
-            <p>{notice.body}</p>
-          </article>
-        ) : (
-          <StateCard title="Пока пусто" text="Администратор еще не публиковал сообщение для пользователей." />
-        )}
-      </section>
+  if (tab === "home") {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 10.5L12 4L20 10.5V19A1 1 0 0 1 19 20H5A1 1 0 0 1 4 19V10.5Z" stroke={color} strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M9 20V13H15V20" stroke={color} strokeWidth="1.8" strokeLinejoin="round" />
+      </svg>
+    );
+  }
 
-      <section className="panel">
-        <div className="panel__header">
-          <div>
-            <p className="eyebrow">Лента</p>
-            <h3>Актуальные новости</h3>
-          </div>
-          <span className="pill">{news.length} материалов</span>
-        </div>
-        <div className="stack">
-          {news.length ? (
-            news.map((item) => (
-              <article className="content-card" key={item.id}>
-                <div className="content-card__meta">
-                  <span className="pill">{item.category}</span>
-                  <span>{formatDate(item.publishedAt)}</span>
-                </div>
-                <h4>{item.title}</h4>
-                <p>{item.summary}</p>
-              </article>
-            ))
-          ) : (
-            <StateCard title="Новостей нет" text="Добавь первую новость через /admin или админ-блок профиля." />
-          )}
-        </div>
-      </section>
-    </>
-  );
-}
-
-function AnnouncementsTab({ announcements }: { announcements: PortalAnnouncement[] }) {
-  return (
-    <section className="panel">
-      <div className="panel__header">
-        <div>
-          <p className="eyebrow">Раздел</p>
-          <h3>Объявления</h3>
-        </div>
-        <span className="pill">{announcements.length} записей</span>
-      </div>
-
-      <div className="stack">
-        {announcements.length ? (
-          announcements.map((item) => (
-            <article className="content-card" key={item.id}>
-              <div className="content-card__meta">
-                <span className="pill">Объявление</span>
-                <span>{formatDate(item.publishedAt)}</span>
-              </div>
-              <h4>{item.title}</h4>
-              <p>{item.body}</p>
-            </article>
-          ))
-        ) : (
-          <StateCard title="Нет объявлений" text="Список объявлений появится после первой публикации." />
-        )}
-      </div>
-    </section>
-  );
-}
-
-type ProfileTabProps = {
-  profile: PortalProfile | null;
-  isAdmin: boolean;
-  saving: boolean;
-  noticeDraft: { title: string; body: string };
-  newsDraft: { title: string; summary: string; category: string };
-  announcementDraft: { title: string; body: string };
-  onNoticeDraftChange: (value: { title: string; body: string }) => void;
-  onNewsDraftChange: (value: { title: string; summary: string; category: string }) => void;
-  onAnnouncementDraftChange: (value: { title: string; body: string }) => void;
-  onNoticeSubmit: (event: FormEvent) => Promise<void>;
-  onNewsSubmit: (event: FormEvent) => Promise<void>;
-  onAnnouncementSubmit: (event: FormEvent) => Promise<void>;
-};
-
-function ProfileTab(props: ProfileTabProps) {
-  const {
-    profile,
-    isAdmin,
-    saving,
-    noticeDraft,
-    newsDraft,
-    announcementDraft,
-    onNoticeDraftChange,
-    onNewsDraftChange,
-    onAnnouncementDraftChange,
-    onNoticeSubmit,
-    onNewsSubmit,
-    onAnnouncementSubmit
-  } = props;
+  if (tab === "announcements") {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="5" y="5" width="14" height="14" rx="3" stroke={color} strokeWidth="1.8" />
+        <path d="M8 10H16" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M8 14H13" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
 
   return (
-    <>
-      <section className="profile-card">
-        <div className="avatar">
-          {profile?.photoUrl ? <img src={profile.photoUrl} alt={profile.firstName} /> : <span>PR</span>}
-        </div>
-        <div>
-          <h3>{[profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "Профиль"}</h3>
-          <p>@{profile?.username || "username отсутствует"}</p>
-          <p>ID Telegram: {profile?.telegramId ?? "не определен"}</p>
-        </div>
-        {isAdmin ? <span className="pill pill--accent">Админ</span> : null}
-      </section>
-
-      {isAdmin ? (
-        <>
-          <section className="panel">
-            <div className="panel__header">
-              <div>
-                <p className="eyebrow">Админка</p>
-                <h3>Сообщение для пользователей</h3>
-              </div>
-            </div>
-            <form className="editor" onSubmit={(event) => void onNoticeSubmit(event)}>
-              <input
-                value={noticeDraft.title}
-                onChange={(event) => onNoticeDraftChange({ ...noticeDraft, title: event.target.value })}
-                placeholder="Заголовок сообщения"
-              />
-              <textarea
-                value={noticeDraft.body}
-                onChange={(event) => onNoticeDraftChange({ ...noticeDraft, body: event.target.value })}
-                placeholder="Текст сообщения для пользователей портала"
-                rows={4}
-              />
-              <button className="primary-button" disabled={saving} type="submit">
-                Сохранить сообщение
-              </button>
-            </form>
-          </section>
-
-          <section className="panel">
-            <div className="panel__header">
-              <div>
-                <p className="eyebrow">Админка</p>
-                <h3>Добавить новость</h3>
-              </div>
-            </div>
-            <form className="editor" onSubmit={(event) => void onNewsSubmit(event)}>
-              <input
-                value={newsDraft.title}
-                onChange={(event) => onNewsDraftChange({ ...newsDraft, title: event.target.value })}
-                placeholder="Заголовок новости"
-              />
-              <input
-                value={newsDraft.category}
-                onChange={(event) => onNewsDraftChange({ ...newsDraft, category: event.target.value })}
-                placeholder="Категория"
-              />
-              <textarea
-                value={newsDraft.summary}
-                onChange={(event) => onNewsDraftChange({ ...newsDraft, summary: event.target.value })}
-                placeholder="Краткое описание новости"
-                rows={4}
-              />
-              <button className="primary-button" disabled={saving} type="submit">
-                Опубликовать новость
-              </button>
-            </form>
-          </section>
-
-          <section className="panel">
-            <div className="panel__header">
-              <div>
-                <p className="eyebrow">Админка</p>
-                <h3>Добавить объявление</h3>
-              </div>
-            </div>
-            <form className="editor" onSubmit={(event) => void onAnnouncementSubmit(event)}>
-              <input
-                value={announcementDraft.title}
-                onChange={(event) =>
-                  onAnnouncementDraftChange({ ...announcementDraft, title: event.target.value })
-                }
-                placeholder="Заголовок объявления"
-              />
-              <textarea
-                value={announcementDraft.body}
-                onChange={(event) =>
-                  onAnnouncementDraftChange({ ...announcementDraft, body: event.target.value })
-                }
-                placeholder="Текст объявления"
-                rows={4}
-              />
-              <button className="primary-button" disabled={saving} type="submit">
-                Опубликовать объявление
-              </button>
-            </form>
-          </section>
-        </>
-      ) : (
-        <StateCard
-          title="Стандартный профиль"
-          text="Профиль создается автоматически из данных Telegram. Админ-инструменты доступны только ID из TELEGRAM_ADMIN_IDS."
-        />
-      )}
-    </>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" stroke={color} strokeWidth="1.8" />
+      <path d="M5.5 19C6.7 15.9 9.1 14.5 12 14.5C14.9 14.5 17.3 15.9 18.5 19" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
   );
-}
-
-function StateCard({
-  title,
-  text,
-  tone = "neutral"
-}: {
-  title: string;
-  text: string;
-  tone?: "neutral" | "danger";
-}) {
-  return (
-    <section className={`state-card ${tone === "danger" ? "state-card--danger" : ""}`}>
-      <h3>{title}</h3>
-      <p>{text}</p>
-    </section>
-  );
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("ru-RU", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value));
 }

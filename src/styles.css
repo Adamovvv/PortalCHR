@@ -47,6 +47,10 @@ textarea {
   font: inherit;
 }
 
+svg {
+  display: block;
+}
+
 .app-shell {
   position: relative;
   min-height: 100dvh;
@@ -80,7 +84,8 @@ textarea {
   background: rgba(255, 197, 170, 0.22);
 }
 
-.app-frame {
+.app-frame,
+.page-stack {
   position: relative;
   z-index: 1;
   display: grid;
@@ -115,7 +120,7 @@ textarea {
 
 .hero {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .hero h1,
@@ -146,7 +151,6 @@ textarea {
   font-weight: 700;
 }
 
-.theme-toggle,
 .primary-button {
   border: none;
   border-radius: 18px;
@@ -259,6 +263,10 @@ textarea {
   border-color: rgba(255, 96, 96, 0.24);
 }
 
+.page-section {
+  width: 100%;
+}
+
 .bottom-nav {
   position: fixed;
   left: 50%;
@@ -305,4 +313,3 @@ textarea {
     flex-wrap: wrap;
   }
 }
-
