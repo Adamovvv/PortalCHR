@@ -70,7 +70,7 @@ export function CreateAnnouncementPage({
             value={draft.body}
             onChange={(event) => onDraftChange({ ...draft, body: event.target.value })}
             placeholder={ru.createAnnouncement.descriptionPlaceholder}
-            rows={5}
+            rows={6}
           />
         </label>
 

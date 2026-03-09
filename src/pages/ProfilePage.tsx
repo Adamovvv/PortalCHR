@@ -9,19 +9,21 @@ type ProfilePageProps = {
 
 export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: ProfilePageProps) {
   return (
-    <div className="page-stack">
+    <>
       <section className="profile-card page-section profile-card--clean">
         <div className="avatar">
           {profile?.photoUrl ? <img src={profile.photoUrl} alt={profile.firstName} /> : <span>PR</span>}
         </div>
-        <div>
+        <div className="profile-card__content">
           <h3>{[profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || ru.profile.fallbackName}</h3>
           <p>@{profile?.username || ru.profile.missingUsername}</p>
-          <p>{ru.profile.telegramId}: {profile?.telegramId ?? "-"}</p>
+          <p>
+            {ru.profile.telegramId}: {profile?.telegramId ?? "-"}
+          </p>
         </div>
       </section>
 
-      <section className="panel panel--flat page-section">
+      <section className="panel page-section">
         <div className="panel__header panel__header--stack">
           <div>
             <h3>{ru.profile.myAnnouncements}</h3>
@@ -31,7 +33,9 @@ export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: Pr
         <div className="stack">
           {announcements.length ? (
             announcements.map((item) => {
-              const categoryLabel = announcementCategoryOptions.find((option) => option.value === item.category)?.label ?? item.category;
+              const categoryLabel =
+                announcementCategoryOptions.find((option) => option.value === item.category)?.label ?? item.category;
+
               return (
                 <article className="content-card content-card--announcement" key={item.id}>
                   <div className="content-card__meta">
@@ -42,7 +46,7 @@ export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: Pr
                   <p>{item.body}</p>
                   <div className="announcement-meta">
                     <span>{formatDate(item.publishedAt)}</span>
-                    <strong>{item.price !== null ? `${item.price} ₽` : ru.announcements.freeLabel}</strong>
+                    <strong>{item.price !== null ? `${item.price} ?` : ru.announcements.freeLabel}</strong>
                   </div>
                   <button className="secondary-action" type="button" onClick={() => void onDeleteAnnouncement(item.id)}>
                     {ru.profile.deleteButton}
@@ -55,7 +59,7 @@ export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: Pr
           )}
         </div>
       </section>
-    </div>
+    </>
   );
 }
 
