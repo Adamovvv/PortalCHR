@@ -56,7 +56,11 @@ svg {
 .app-shell {
   position: relative;
   min-height: 100dvh;
-  padding-top: var(--tg-content-safe-area-inset-top);
+  padding:
+    var(--tg-content-safe-area-inset-top, env(safe-area-inset-top))
+    16px
+    calc(110px + max(16px, env(safe-area-inset-bottom)))
+    16px;
   overflow-x: hidden;
 }
 
@@ -413,3 +417,4 @@ svg {
     width: 100%;
   }
 }
+
