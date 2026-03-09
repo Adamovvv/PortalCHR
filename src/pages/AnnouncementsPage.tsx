@@ -4,22 +4,11 @@ import type { PortalAnnouncement } from "../types";
 
 type AnnouncementsPageProps = {
   announcements: PortalAnnouncement[];
-  onCreateAnnouncement: () => void;
 };
 
-export function AnnouncementsPage({ announcements, onCreateAnnouncement }: AnnouncementsPageProps) {
+export function AnnouncementsPage({ announcements }: AnnouncementsPageProps) {
   return (
     <section className="panel page-section panel--flat">
-      <div className="panel__header panel__header--stack">
-        <div>
-          <p className="eyebrow">{ru.announcements.eyebrow}</p>
-          <h3>{ru.announcements.title}</h3>
-        </div>
-        <button className="primary-action" type="button" onClick={onCreateAnnouncement}>
-          {ru.announcements.addButton}
-        </button>
-      </div>
-
       <p className="subtle-copy">{ru.announcements.oneFree}</p>
 
       <div className="stack">

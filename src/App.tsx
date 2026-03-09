@@ -50,11 +50,11 @@ export function App() {
   const displayName = [telegramUser?.first_name, telegramUser?.last_name].filter(Boolean).join(" ");
 
   const screenTitle =
-    activeScreen == "home"
+    activeScreen === "home"
       ? ru.app.subtitle
-      : activeScreen == "announcements"
+      : activeScreen === "announcements"
         ? ru.announcements.title
-        : activeScreen == "profile"
+        : activeScreen === "profile"
           ? ru.profile.title
           : ru.createAnnouncement.title;
 
@@ -156,6 +156,11 @@ export function App() {
       <main className="app-frame">
         <section className="screen-header">
           <p className="screen-header__title">{screenTitle}</p>
+          {activeScreen === "announcements" ? (
+            <button className="primary-action" type="button" onClick={() => setActiveScreen("create-announcement")}>
+              {ru.announcements.addButton}
+            </button>
+          ) : null}
         </section>
 
         {activeScreen !== "profile" && activeScreen !== "create-announcement" ? (
@@ -177,12 +182,7 @@ export function App() {
               <HomePage news={filteredNews} username={displayName || ru.common.telegramUserFallback} />
             ) : null}
 
-            {activeScreen === "announcements" ? (
-              <AnnouncementsPage
-                announcements={filteredAnnouncements}
-                onCreateAnnouncement={() => setActiveScreen("create-announcement")}
-              />
-            ) : null}
+            {activeScreen === "announcements" ? <AnnouncementsPage announcements={filteredAnnouncements} /> : null}
 
             {activeScreen === "profile" ? (
               <ProfilePage

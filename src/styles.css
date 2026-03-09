@@ -70,9 +70,12 @@ svg {
   margin: 0 auto;
 }
 
-
 .screen-header {
   padding-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .screen-header__title {
@@ -83,20 +86,15 @@ svg {
   color: var(--text);
 }
 
-.hero,
-.search-card,
 .panel,
 .profile-card,
 .state-card,
-.bottom-nav,
-.marquee-card {
+.bottom-nav {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(21, 28, 45, 0.06);
   box-shadow: 0 10px 24px rgba(35, 47, 78, 0.08);
 }
 
-.hero,
-.search-card,
 .panel,
 .profile-card,
 .state-card {
@@ -104,17 +102,6 @@ svg {
   padding: 16px;
 }
 
-.hero {
-  display: grid;
-  gap: 10px;
-}
-
-.hero--compact {
-  padding: 18px 16px;
-}
-
-.hero h1,
-.hero h2,
 .panel h3,
 .profile-card h3,
 .state-card h3,
@@ -122,74 +109,11 @@ svg {
   margin: 0;
 }
 
-.hero p,
 .panel p,
 .profile-card p,
 .state-card p,
 .content-card p {
   margin: 0;
-}
-
-.hero__text {
-  margin-top: 8px;
-  color: var(--muted);
-}
-
-.eyebrow {
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.search-card,
-.panel__header,
-.content-card__meta,
-.profile-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.search-card {
-  align-items: stretch;
-  flex-direction: column;
-}
-
-.search-card--compact {
-  padding: 10px;
-}
-
-.marquee-card {
-  overflow: hidden;
-  border-radius: 18px;
-  padding: 10px 0;
-}
-
-.marquee-track {
-  display: flex;
-  gap: 32px;
-  min-width: max-content;
-  white-space: nowrap;
-  color: var(--accent);
-  font-size: 14px;
-  font-weight: 700;
-  animation: marquee-scroll 24s linear infinite;
-}
-
-.marquee-track span {
-  padding-left: 18px;
-}
-
-@keyframes marquee-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 .search-field {
@@ -198,7 +122,10 @@ svg {
   color: var(--muted);
 }
 
-.search-field input {
+.search-field input,
+.field-block select,
+.field-block input,
+.field-block textarea {
   width: 100%;
   border: 1px solid rgba(21, 28, 45, 0.08);
   border-radius: 16px;
@@ -207,9 +134,25 @@ svg {
   color: var(--text);
 }
 
-.stack {
+.stack,
+.editor {
   display: grid;
   gap: 12px;
+}
+
+.panel__header,
+.content-card__meta,
+.profile-card,
+.announcement-meta,
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel__header--stack {
+  margin-bottom: 8px;
 }
 
 .content-card {
@@ -219,6 +162,14 @@ svg {
   border-radius: 18px;
   background: #ffffff;
   border: 1px solid rgba(21, 28, 45, 0.06);
+}
+
+.eyebrow {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .pill {
@@ -235,10 +186,6 @@ svg {
 
 .panel--flat {
   padding: 14px;
-}
-
-.panel__header--stack {
-  margin-bottom: 8px;
 }
 
 .avatar {
@@ -315,12 +262,6 @@ svg {
   line-height: 1;
 }
 
-@media (max-width: 640px) {
-  .profile-card {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
 .primary-action,
 .secondary-action {
   border: none;
@@ -344,14 +285,6 @@ svg {
   color: var(--muted);
 }
 
-.announcement-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--muted);
-}
-
 .content-card--announcement strong {
   color: var(--text);
 }
@@ -362,22 +295,6 @@ svg {
   color: var(--muted);
 }
 
-.field-block select,
-.field-block input,
-.field-block textarea {
-  width: 100%;
-  border: 1px solid rgba(21, 28, 45, 0.08);
-  border-radius: 16px;
-  padding: 14px;
-  background: #f8f9fd;
-  color: var(--text);
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: space-between;
-}
 .link-action {
   text-decoration: none;
   text-align: center;
@@ -385,4 +302,20 @@ svg {
 
 .subtle-copy--empty {
   margin: 4px 0 0;
+}
+
+@media (max-width: 640px) {
+  .profile-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .screen-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .screen-header .primary-action {
+    width: 100%;
+  }
 }
