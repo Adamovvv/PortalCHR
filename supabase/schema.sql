@@ -23,7 +23,7 @@ create table if not exists public.news (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   summary text not null,
-  category text not null default 'Новости',
+  category text not null default 'РќРѕРІРѕСЃС‚Рё',
   author_telegram_id bigint not null,
   published_at timestamptz not null default now()
 );
@@ -92,3 +92,4 @@ on public.announcements
 for select
 to anon
 using (false);
+

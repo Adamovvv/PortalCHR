@@ -65,3 +65,4 @@ export function requireTelegramUser(initData: string) {
 export function isAdminTelegramId(telegramId: number) {
   return getAdminIds().includes(telegramId);
 }
+

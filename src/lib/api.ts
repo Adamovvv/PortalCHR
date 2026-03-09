@@ -66,3 +66,4 @@ export async function createAnnouncement(
     body: JSON.stringify({ initData, title, body })
   });
 }
+

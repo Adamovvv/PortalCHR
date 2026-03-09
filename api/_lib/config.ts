@@ -13,3 +13,4 @@ export function getAdminIds() {
     .map((item) => Number(item.trim()))
     .filter((item) => Number.isInteger(item) && item > 0);
 }
+

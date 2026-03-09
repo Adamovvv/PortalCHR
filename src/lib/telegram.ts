@@ -36,3 +36,4 @@ export function setupTelegramChrome() {
     // Fullscreen is optional and depends on Telegram client version.
   }
 }
+

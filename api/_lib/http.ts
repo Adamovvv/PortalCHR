@@ -25,3 +25,4 @@ export function handleApiError(res: VercelResponse, error: unknown) {
   const message = error instanceof Error ? error.message : "Unexpected error";
   res.status(400).json({ error: message });
 }
+
