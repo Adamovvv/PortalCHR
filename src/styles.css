@@ -53,55 +53,51 @@ svg {
   position: relative;
   min-height: 100dvh;
   padding:
-    calc(env(safe-area-inset-top) + 18px)
+    max(20px, env(safe-area-inset-top))
     16px
-    calc(110px + max(18px, env(safe-area-inset-bottom)))
+    calc(110px + max(16px, env(safe-area-inset-bottom)))
     16px;
   overflow-x: hidden;
 }
 
 .app-frame,
 .page-stack {
+  width: 100%;
   position: relative;
   z-index: 1;
   display: grid;
   gap: 12px;
-  max-width: 720px;
   margin: 0 auto;
 }
 
-.screen-header {
-  padding-top: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.screen-header__title {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1.1;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.panel,
+.search-card,
 .profile-card,
 .state-card,
-.bottom-nav {
+.bottom-nav,
+.marquee-card {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(21, 28, 45, 0.06);
   box-shadow: 0 10px 24px rgba(35, 47, 78, 0.08);
 }
 
-.panel,
+.search-card,
 .profile-card,
 .state-card {
   border-radius: 24px;
   padding: 16px;
 }
 
+.hero {
+  display: grid;
+  gap: 10px;
+}
+
+.hero--compact {
+  padding: 18px 16px;
+}
+
+.hero h1,
+.hero h2,
 .panel h3,
 .profile-card h3,
 .state-card h3,
@@ -109,11 +105,74 @@ svg {
   margin: 0;
 }
 
+.hero p,
 .panel p,
 .profile-card p,
 .state-card p,
 .content-card p {
   margin: 0;
+}
+
+.hero__text {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.eyebrow {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.search-card,
+.panel__header,
+.content-card__meta,
+.profile-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.search-card {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.search-card--compact {
+  padding: 10px;
+}
+
+.marquee-card {
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 10px 0;
+}
+
+.marquee-track {
+  display: flex;
+  gap: 32px;
+  min-width: max-content;
+  white-space: nowrap;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+  animation: marquee-scroll 24s linear infinite;
+}
+
+.marquee-track span {
+  padding-left: 18px;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .search-field {
@@ -122,10 +181,7 @@ svg {
   color: var(--muted);
 }
 
-.search-field input,
-.field-block select,
-.field-block input,
-.field-block textarea {
+.search-field input {
   width: 100%;
   border: 1px solid rgba(21, 28, 45, 0.08);
   border-radius: 16px;
@@ -134,25 +190,9 @@ svg {
   color: var(--text);
 }
 
-.stack,
-.editor {
+.stack {
   display: grid;
   gap: 12px;
-}
-
-.panel__header,
-.content-card__meta,
-.profile-card,
-.announcement-meta,
-.form-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.panel__header--stack {
-  margin-bottom: 8px;
 }
 
 .content-card {
@@ -162,14 +202,6 @@ svg {
   border-radius: 18px;
   background: #ffffff;
   border: 1px solid rgba(21, 28, 45, 0.06);
-}
-
-.eyebrow {
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .pill {
@@ -186,6 +218,10 @@ svg {
 
 .panel--flat {
   padding: 14px;
+}
+
+.panel__header--stack {
+  margin-bottom: 8px;
 }
 
 .avatar {
@@ -262,60 +298,9 @@ svg {
   line-height: 1;
 }
 
-.primary-action,
-.secondary-action {
-  border: none;
-  border-radius: 16px;
-  padding: 12px 16px;
-  font-weight: 700;
-}
-
-.primary-action {
-  background: #e9531f;
-  color: white;
-}
-
-.secondary-action {
-  background: rgba(21, 28, 45, 0.06);
-  color: var(--text);
-}
-
-.subtle-copy {
-  margin: 0 0 12px;
-  color: var(--muted);
-}
-
-.content-card--announcement strong {
-  color: var(--text);
-}
-
-.field-block {
-  display: grid;
-  gap: 8px;
-  color: var(--muted);
-}
-
-.link-action {
-  text-decoration: none;
-  text-align: center;
-}
-
-.subtle-copy--empty {
-  margin: 4px 0 0;
-}
-
 @media (max-width: 640px) {
   .profile-card {
     align-items: flex-start;
     flex-wrap: wrap;
-  }
-
-  .screen-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .screen-header .primary-action {
-    width: 100%;
   }
 }

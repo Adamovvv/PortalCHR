@@ -8,7 +8,7 @@ type AnnouncementsPageProps = {
 
 export function AnnouncementsPage({ announcements }: AnnouncementsPageProps) {
   return (
-    <section className="panel page-section panel--flat">
+    <section className="panel page-section">
       <p className="subtle-copy">{ru.announcements.oneFree}</p>
 
       <div className="stack">
