@@ -91,32 +91,34 @@ export function App() {
 
   return (
     <div className="app-shell">
-      <div className="ambient ambient-left" />
-      <div className="ambient ambient-right" />
       <main className="app-frame">
-        <header className="hero">
-          <div>
-            <p className="eyebrow">{ru.app.title}</p>
-            <h1>{ru.app.subtitle}</h1>
-          </div>
-        </header>
+        {activeTab !== "profile" ? (
+          <>
+            <header className="hero">
+              <div>
+                <p className="eyebrow">{ru.app.title}</p>
+                <h1>{ru.app.subtitle}</h1>
+              </div>
+            </header>
 
-        <section className="marquee-card" aria-label="portal-notice">
-          <div className="marquee-track">
-            <span>{marqueeText}</span>
-            <span>{marqueeText}</span>
-          </div>
-        </section>
+            <section className="marquee-card" aria-label="portal-notice">
+              <div className="marquee-track">
+                <span>{marqueeText}</span>
+                <span>{marqueeText}</span>
+              </div>
+            </section>
 
-        <section className="search-card search-card--compact">
-          <label className="search-field">
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={ru.app.searchPlaceholder}
-            />
-          </label>
-        </section>
+            <section className="search-card search-card--compact">
+              <label className="search-field">
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={ru.app.searchPlaceholder}
+                />
+              </label>
+            </section>
+          </>
+        ) : null}
 
         {loading ? <StateCard title={ru.app.loadingTitle} text={ru.app.loadingText} /> : null}
         {error ? <StateCard title={ru.app.errorTitle} text={error} tone="danger" /> : null}
@@ -124,10 +126,7 @@ export function App() {
         {!loading && !error ? (
           <>
             {activeTab === "home" ? (
-              <HomePage
-                news={filteredNews}
-                username={displayName || ru.common.telegramUserFallback}
-              />
+              <HomePage news={filteredNews} username={displayName || ru.common.telegramUserFallback} />
             ) : null}
 
             {activeTab === "announcements" ? (

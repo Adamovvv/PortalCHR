@@ -8,7 +8,7 @@ type ProfilePageProps = {
 export function ProfilePage({ profile }: ProfilePageProps) {
   return (
     <div className="page-stack">
-      <section className="profile-card page-section">
+      <section className="profile-card page-section profile-card--clean">
         <div className="avatar">
           {profile?.photoUrl ? <img src={profile.photoUrl} alt={profile.firstName} /> : <span>PR</span>}
         </div>

@@ -10,19 +10,23 @@ type HomePageProps = {
 export function HomePage({ news, username }: HomePageProps) {
   return (
     <>
-      <section className="welcome-card">
-        <p className="eyebrow">{ru.home.welcomeEyebrow}</p>
-        <h2>{username}</h2>
-        <p>{ru.home.welcomeText}</p>
+      <section className="hero hero--compact">
+        <div className="panel__header">
+          <div>
+            <p className="eyebrow">{ru.home.welcomeEyebrow}</p>
+            <h2>{username}</h2>
+            <p className="hero__text">{ru.home.welcomeText}</p>
+          </div>
+          <span className="pill">{news.length} {ru.home.newsCountSuffix}</span>
+        </div>
       </section>
 
-      <section className="panel">
-        <div className="panel__header">
+      <section className="panel panel--flat">
+        <div className="panel__header panel__header--stack">
           <div>
             <p className="eyebrow">{ru.home.newsEyebrow}</p>
             <h3>{ru.home.newsTitle}</h3>
           </div>
-          <span className="pill">{news.length} {ru.home.newsCountSuffix}</span>
         </div>
         <div className="stack">
           {news.length ? (
