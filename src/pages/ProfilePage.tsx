@@ -15,7 +15,6 @@ export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: Pr
           {profile?.photoUrl ? <img src={profile.photoUrl} alt={profile.firstName} /> : <span>PR</span>}
         </div>
         <div>
-          <p className="eyebrow">{ru.profile.eyebrow}</p>
           <h3>{[profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || ru.profile.fallbackName}</h3>
           <p>@{profile?.username || ru.profile.missingUsername}</p>
           <p>{ru.profile.telegramId}: {profile?.telegramId ?? "-"}</p>
@@ -25,7 +24,6 @@ export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: Pr
       <section className="panel panel--flat page-section">
         <div className="panel__header panel__header--stack">
           <div>
-            <p className="eyebrow">{ru.profile.eyebrow}</p>
             <h3>{ru.profile.myAnnouncements}</h3>
           </div>
         </div>

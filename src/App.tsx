@@ -49,6 +49,15 @@ export function App() {
   const telegramUser = getTelegramUser();
   const displayName = [telegramUser?.first_name, telegramUser?.last_name].filter(Boolean).join(" ");
 
+  const screenTitle =
+    activeScreen == "home"
+      ? ru.app.subtitle
+      : activeScreen == "announcements"
+        ? ru.announcements.title
+        : activeScreen == "profile"
+          ? ru.profile.title
+          : ru.createAnnouncement.title;
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
@@ -145,6 +154,10 @@ export function App() {
   return (
     <div className="app-shell">
       <main className="app-frame">
+        <section className="screen-header">
+          <p className="screen-header__title">{screenTitle}</p>
+        </section>
+
         {activeScreen !== "profile" && activeScreen !== "create-announcement" ? (
           <label className="search-field">
             <input

@@ -10,14 +10,6 @@ type HomePageProps = {
 export function HomePage({ news, username }: HomePageProps) {
   return (
     <>
-      <section className="hero hero--compact">
-        <div>
-          <p className="eyebrow">{ru.home.welcomeEyebrow}</p>
-          <h2>{username}</h2>
-          <p className="hero__text">{ru.app.subtitle}</p>
-        </div>
-      </section>
-
       <section className="panel panel--flat">
         <div className="panel__header panel__header--stack">
           <div>
