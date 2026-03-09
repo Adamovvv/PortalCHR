@@ -15,12 +15,65 @@
 }
 
 :root[data-theme="dark"] {
-  --text: #fff5ef;
-  --muted: #cdbeb6;
-  --surface: rgba(23, 20, 24, 0.82);
-  --surface-strong: rgba(31, 26, 32, 0.92);
-  --border: rgba(255, 255, 255, 0.08);
-  --shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+  --text: #f5f0ea;
+  --muted: #c9b8ac;
+  --surface: rgba(28, 24, 30, 0.88);
+  --surface-strong: rgba(38, 32, 40, 0.94);
+  --border: rgba(255, 255, 255, 0.09);
+  --shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+
+  /* Акцент в тёмной теме — чуть мягче */
+  --accent: #ff6b3e;
+  --accent-soft: rgba(255, 107, 62, 0.18);
+  --accent-strong: #ff521f;
+}
+
+/* Input / textarea / select в тёмной теме */
+[data-theme="dark"] .field-block input,
+[data-theme="dark"] .field-block textarea,
+[data-theme="dark"] .field-block select {
+  background: rgba(45, 40, 48, 0.9);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+[data-theme="dark"] .field-block input:focus,
+[data-theme="dark"] .field-block textarea:focus,
+[data-theme="dark"] .field-block select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(255, 107, 62, 0.22);
+  background: rgba(55, 50, 58, 0.9);
+}
+
+/* Карточки */
+[data-theme="dark"] .content-card {
+  background: rgba(45, 40, 48, 0.92);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Pill */
+[data-theme="dark"] .pill {
+  background: rgba(255, 107, 62, 0.22);
+  color: var(--accent);
+}
+
+/* Bottom nav */
+[data-theme="dark"] .bottom-nav {
+  background: rgba(28, 24, 30, 0.92);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+/* Кнопки */
+[data-theme="dark"] .secondary-action,
+[data-theme="dark"] .link-action {
+  background: rgba(50, 45, 55, 0.85);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+[data-theme="dark"] .secondary-action:hover,
+[data-theme="dark"] .link-action:hover {
+  background: rgba(255, 107, 62, 0.15);
 }
 
 * {
