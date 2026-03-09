@@ -1,5 +1,6 @@
 import type {
   PortalAnnouncement,
+  PortalAnnouncementCategory,
   PortalContent,
   PortalNews,
   PortalNotice,
@@ -58,12 +59,15 @@ export async function createNews(
 
 export async function createAnnouncement(
   initData: string,
-  title: string,
-  body: string
+  payload: {
+    title: string;
+    body: string;
+    category: PortalAnnouncementCategory;
+    price: number | null;
+  }
 ): Promise<PortalAnnouncement> {
   return request<PortalAnnouncement>("/api/admin/announcement", {
     method: "POST",
-    body: JSON.stringify({ initData, title, body })
+    body: JSON.stringify({ initData, ...payload })
   });
 }
-

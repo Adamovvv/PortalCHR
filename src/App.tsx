@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import { loadContent, syncProfile } from "./lib/api";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { createAnnouncement, loadContent, syncProfile } from "./lib/api";
 import { getInitData, getInitialTheme, getTelegramUser, setupTelegramChrome } from "./lib/telegram";
-import type { PortalContent, ThemeMode } from "./types";
+import type { PortalAnnouncementCategory, PortalContent, ThemeMode } from "./types";
 import { ru } from "./content/ru";
 import { StateCard } from "./components/StateCard";
 import { HomePage } from "./pages/HomePage";
 import { AnnouncementsPage } from "./pages/AnnouncementsPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { CreateAnnouncementPage } from "./pages/CreateAnnouncementPage";
 
-type TabKey = "home" | "announcements" | "profile";
+type ScreenKey = "home" | "announcements" | "profile" | "create-announcement";
 
 const emptyContent: PortalContent = {
   profile: null,
@@ -17,7 +18,7 @@ const emptyContent: PortalContent = {
   announcements: []
 };
 
-const tabs: Array<{ key: TabKey; label: string }> = [
+const tabs: Array<{ key: Exclude<ScreenKey, "create-announcement">; label: string }> = [
   { key: "home", label: ru.nav.home },
   { key: "announcements", label: ru.nav.announcements },
   { key: "profile", label: ru.nav.profile }
@@ -25,18 +26,27 @@ const tabs: Array<{ key: TabKey; label: string }> = [
 
 export function App() {
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme());
-  const [activeTab, setActiveTab] = useState<TabKey>("home");
+  const [activeScreen, setActiveScreen] = useState<ScreenKey>("home");
   const [content, setContent] = useState<PortalContent>(emptyContent);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [submittingAnnouncement, setSubmittingAnnouncement] = useState(false);
+  const [announcementDraft, setAnnouncementDraft] = useState<{
+    title: string;
+    category: PortalAnnouncementCategory;
+    body: string;
+    price: string;
+  }>({
+    title: "",
+    category: "other",
+    body: "",
+    price: ""
+  });
 
   const initData = getInitData();
   const telegramUser = getTelegramUser();
   const displayName = [telegramUser?.first_name, telegramUser?.last_name].filter(Boolean).join(" ");
-  const marqueeText = content.notice?.title
-    ? `${content.notice.title}: ${content.notice.body}`
-    : ru.app.marqueeFallback;
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -84,40 +94,50 @@ export function App() {
 
   const filteredAnnouncements = useMemo(() => {
     return content.announcements.filter((item) => {
-      const text = `${item.title} ${item.body}`.toLowerCase();
+      const text = `${item.title} ${item.body} ${item.category} ${item.authorName}`.toLowerCase();
       return text.includes(query.toLowerCase());
     });
   }, [content.announcements, query]);
 
+  async function handleAnnouncementSubmit(event: FormEvent) {
+    event.preventDefault();
+    if (!announcementDraft.title.trim() || !announcementDraft.body.trim()) {
+      return;
+    }
+
+    try {
+      setSubmittingAnnouncement(true);
+      setError(null);
+      const created = await createAnnouncement(initData, {
+        title: announcementDraft.title.trim(),
+        body: announcementDraft.body.trim(),
+        category: announcementDraft.category,
+        price: announcementDraft.price.trim() ? Number(announcementDraft.price) : null
+      });
+      setContent((current) => ({
+        ...current,
+        announcements: [created, ...current.announcements]
+      }));
+      setAnnouncementDraft({ title: "", category: "other", body: "", price: "" });
+      setActiveScreen("announcements");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
+    } finally {
+      setSubmittingAnnouncement(false);
+    }
+  }
+
   return (
     <div className="app-shell">
       <main className="app-frame">
-        {activeTab !== "profile" ? (
-          <>
-            <header className="hero">
-              <div>
-                <p className="eyebrow">{ru.app.title}</p>
-                <h1>{ru.app.subtitle}</h1>
-              </div>
-            </header>
-
-            <section className="marquee-card" aria-label="portal-notice">
-              <div className="marquee-track">
-                <span>{marqueeText}</span>
-                <span>{marqueeText}</span>
-              </div>
-            </section>
-
-            <section className="search-card search-card--compact">
-              <label className="search-field">
-                <input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder={ru.app.searchPlaceholder}
-                />
-              </label>
-            </section>
-          </>
+        {activeScreen !== "profile" && activeScreen !== "create-announcement" ? (
+          <label className="search-field">
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={ru.app.searchPlaceholder}
+            />
+          </label>
         ) : null}
 
         {loading ? <StateCard title={ru.app.loadingTitle} text={ru.app.loadingText} /> : null}
@@ -125,15 +145,28 @@ export function App() {
 
         {!loading && !error ? (
           <>
-            {activeTab === "home" ? (
+            {activeScreen === "home" ? (
               <HomePage news={filteredNews} username={displayName || ru.common.telegramUserFallback} />
             ) : null}
 
-            {activeTab === "announcements" ? (
-              <AnnouncementsPage announcements={filteredAnnouncements} />
+            {activeScreen === "announcements" ? (
+              <AnnouncementsPage
+                announcements={filteredAnnouncements}
+                onCreateAnnouncement={() => setActiveScreen("create-announcement")}
+              />
             ) : null}
 
-            {activeTab === "profile" ? <ProfilePage profile={content.profile} /> : null}
+            {activeScreen === "profile" ? <ProfilePage profile={content.profile} /> : null}
+
+            {activeScreen === "create-announcement" ? (
+              <CreateAnnouncementPage
+                draft={announcementDraft}
+                submitting={submittingAnnouncement}
+                onDraftChange={setAnnouncementDraft}
+                onBack={() => setActiveScreen("announcements")}
+                onSubmit={handleAnnouncementSubmit}
+              />
+            ) : null}
           </>
         ) : null}
       </main>
@@ -143,11 +176,11 @@ export function App() {
           <button
             key={tab.key}
             type="button"
-            className={`bottom-nav__item ${activeTab === tab.key ? "is-active" : ""}`}
-            onClick={() => setActiveTab(tab.key)}
+            className={`bottom-nav__item ${activeScreen === tab.key ? "is-active" : ""}`}
+            onClick={() => setActiveScreen(tab.key)}
           >
             <span className="bottom-nav__icon">
-              <NavIcon tab={tab.key} active={activeTab === tab.key} />
+              <NavIcon tab={tab.key} active={activeScreen === tab.key} />
             </span>
             <span>{tab.label}</span>
           </button>
@@ -157,7 +190,7 @@ export function App() {
   );
 }
 
-function NavIcon({ tab, active }: { tab: TabKey; active: boolean }) {
+function NavIcon({ tab, active }: { tab: Exclude<ScreenKey, "create-announcement">; active: boolean }) {
   const color = active ? "currentColor" : "currentColor";
 
   if (tab === "home") {

@@ -24,10 +24,22 @@ export type PortalNews = {
   publishedAt: string;
 };
 
+export type PortalAnnouncementCategory =
+  | "transport"
+  | "electronics"
+  | "home"
+  | "services"
+  | "realty"
+  | "jobs"
+  | "other";
+
 export type PortalAnnouncement = {
   id: string;
   title: string;
   body: string;
+  category: PortalAnnouncementCategory;
+  authorName: string;
+  price: number | null;
   publishedAt: string;
 };
 
@@ -65,4 +77,3 @@ declare global {
     };
   }
 }
-

@@ -32,9 +32,18 @@ create table if not exists public.announcements (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   body text not null,
+  category text not null default 'other',
+  author_name text not null default 'Telegram User',
+  price numeric(12,2),
+  is_free boolean not null default true,
   author_telegram_id bigint not null,
   published_at timestamptz not null default now()
 );
+
+alter table public.announcements add column if not exists category text not null default 'other';
+alter table public.announcements add column if not exists author_name text not null default 'Telegram User';
+alter table public.announcements add column if not exists price numeric(12,2);
+alter table public.announcements add column if not exists is_free boolean not null default true;
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -92,4 +101,3 @@ on public.announcements
 for select
 to anon
 using (false);
-

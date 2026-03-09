@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       supabase.from("profiles").select("*").eq("telegram_id", user.id).maybeSingle(),
       supabase.from("portal_notice").select("*").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
       supabase.from("news").select("*").order("published_at", { ascending: false }).limit(20),
-      supabase.from("announcements").select("*").order("published_at", { ascending: false }).limit(20)
+      supabase.from("announcements").select("*").order("published_at", { ascending: false }).limit(30)
     ]);
 
     if (profileResult.error || noticeResult.error || newsResult.error || announcementsResult.error) {
@@ -54,6 +54,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         id: item.id,
         title: item.title,
         body: item.body,
+        category: item.category,
+        authorName: item.author_name,
+        price: item.price,
         publishedAt: item.published_at
       }))
     });
@@ -61,4 +64,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     handleApiError(res, error);
   }
 }
-

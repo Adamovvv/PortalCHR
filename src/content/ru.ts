@@ -1,43 +1,67 @@
+export const announcementCategoryOptions = [
+  { value: "transport", label: "Транспорт" },
+  { value: "electronics", label: "Электроника" },
+  { value: "home", label: "Дом и сад" },
+  { value: "services", label: "Услуги" },
+  { value: "realty", label: "Недвижимость" },
+  { value: "jobs", label: "Работа" },
+  { value: "other", label: "Другое" }
+] as const;
+
 export const ru = {
   app: {
-    title: "\u041f\u043e\u0440\u0442\u0430\u043b \u0420\u0435\u0441\u043f\u0443\u0431\u043b\u0438\u043a\u0438",
-    subtitle: "\u0415\u0434\u0438\u043d\u043e\u0435 \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e \u043d\u043e\u0432\u043e\u0441\u0442\u0435\u0439, \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0439 \u0438 \u0441\u0435\u0440\u0432\u0438\u0441\u0430",
-    searchPlaceholder: "\u041d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: \u0434\u043e\u0440\u043e\u0433\u0438, \u0448\u043a\u043e\u043b\u044b, \u043c\u0435\u0434\u0438\u0446\u0438\u043d\u0430",
-    loadingTitle: "\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430",
-    loadingText: "\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u044e Telegram \u0438 Supabase...",
-    errorTitle: "\u041e\u0448\u0438\u0431\u043a\u0430",
-    openInsideTelegram: "\u041e\u0442\u043a\u0440\u043e\u0439 \u043c\u0438\u043d\u0438-\u0430\u043f\u043f \u0432\u043d\u0443\u0442\u0440\u0438 Telegram, \u0447\u0442\u043e\u0431\u044b \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0434\u0430\u043d\u043d\u044b\u0435 \u043f\u0440\u043e\u0444\u0438\u043b\u044f.",
-    loadFailed: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043f\u043e\u0440\u0442\u0430\u043b.",
-    marqueeFallback: "\u0417\u0434\u0435\u0441\u044c \u0431\u0443\u0434\u0435\u0442 \u043e\u0442\u043e\u0431\u0440\u0430\u0436\u0430\u0442\u044c\u0441\u044f \u0432\u0430\u0436\u043d\u043e\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0434\u043b\u044f \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439 \u043f\u043e\u0440\u0442\u0430\u043b\u0430."
+    title: "Портал Республики",
+    searchPlaceholder: "Поиск по объявлениям и новостям",
+    loadingTitle: "Загрузка",
+    loadingText: "Подключаю Telegram и Supabase...",
+    errorTitle: "Ошибка",
+    openInsideTelegram: "Открой мини-апп внутри Telegram, чтобы загрузить данные профиля.",
+    loadFailed: "Не удалось загрузить портал."
   },
   nav: {
-    home: "\u0413\u043b\u0430\u0432\u043d\u0430\u044f",
-    announcements: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
-    profile: "\u041f\u0440\u043e\u0444\u0438\u043b\u044c"
+    home: "Главная",
+    announcements: "Объявления",
+    profile: "Профиль"
   },
   home: {
-    welcomeEyebrow: "\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c",
-    welcomeText: "\u0417\u0434\u0435\u0441\u044c \u0441\u043e\u0431\u0440\u0430\u043d\u044b \u0432\u0430\u0436\u043d\u044b\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438, \u0430\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u043d\u043e\u0432\u043e\u0441\u0442\u0438 \u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f \u043f\u043e\u0440\u0442\u0430\u043b\u0430.",
-    newsEyebrow: "\u041b\u0435\u043d\u0442\u0430",
-    newsTitle: "\u0410\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u043d\u043e\u0432\u043e\u0441\u0442\u0438",
-    newsCountSuffix: "\u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u043e\u0432",
-    newsEmptyTitle: "\u041d\u043e\u0432\u043e\u0441\u0442\u0435\u0439 \u043d\u0435\u0442",
-    newsEmptyText: "\u041d\u043e\u0432\u0430\u044f \u043b\u0435\u043d\u0442\u0430 \u043f\u043e\u044f\u0432\u0438\u0442\u0441\u044f \u043f\u043e\u0441\u043b\u0435 \u043f\u0435\u0440\u0432\u043e\u0439 \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438."
+    welcomeEyebrow: "Добро пожаловать",
+    welcomeText: "Новости и новые публикации портала собраны в одном месте.",
+    newsEyebrow: "Лента",
+    newsTitle: "Актуальные новости",
+    newsCountSuffix: "материалов",
+    newsEmptyTitle: "Новостей нет",
+    newsEmptyText: "Новая лента появится после первой публикации."
   },
   announcements: {
-    eyebrow: "\u0420\u0430\u0437\u0434\u0435\u043b",
-    title: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
-    countSuffix: "\u0437\u0430\u043f\u0438\u0441\u0435\u0439",
-    badge: "\u041e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
-    emptyTitle: "\u041d\u0435\u0442 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0439",
-    emptyText: "\u0421\u043f\u0438\u0441\u043e\u043a \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0439 \u043f\u043e\u044f\u0432\u0438\u0442\u0441\u044f \u043f\u043e\u0441\u043b\u0435 \u043f\u0435\u0440\u0432\u043e\u0439 \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438."
+    eyebrow: "Объявления",
+    title: "Лента объявлений",
+    countSuffix: "записей",
+    emptyTitle: "Объявлений пока нет",
+    emptyText: "Стань первым пользователем, кто разместит объявление.",
+    addButton: "Добавить объявление",
+    oneFree: "Одно объявление бесплатно",
+    priceLabel: "Цена",
+    freeLabel: "Бесплатно"
+  },
+  createAnnouncement: {
+    title: "Новое объявление",
+    subtitle: "Одно бесплатное объявление доступно каждому пользователю.",
+    nameLabel: "Название",
+    namePlaceholder: "Например: iPhone 14, услуги электрика, аренда квартиры",
+    categoryLabel: "Категория",
+    descriptionLabel: "Описание",
+    descriptionPlaceholder: "Кратко опиши объявление, состояние, условия и контакты",
+    priceLabel: "Цена",
+    pricePlaceholder: "Если цена не нужна, оставь пустым",
+    submit: "Опубликовать",
+    cancel: "Назад"
   },
   profile: {
-    fallbackName: "\u041f\u0440\u043e\u0444\u0438\u043b\u044c",
-    missingUsername: "username \u043e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442",
+    fallbackName: "Профиль",
+    missingUsername: "username отсутствует",
     telegramId: "ID Telegram"
   },
   common: {
-    telegramUserFallback: "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c Telegram"
+    telegramUserFallback: "Пользователь Telegram"
   }
 } as const;
