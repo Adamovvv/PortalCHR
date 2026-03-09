@@ -57,7 +57,7 @@ svg {
   position: relative;
   min-height: 100dvh;
   padding:
-    var(--tg-content-safe-area-inset-top, env(safe-area-inset-top))
+    calc(var(--tg-content-safe-area-inset-top, env(safe-area-inset-top)) + 12px)
     16px
     calc(110px + max(16px, env(safe-area-inset-bottom)))
     16px;
@@ -93,7 +93,6 @@ svg {
   width: 100%;
 }
 
-.panel,
 .profile-card,
 .state-card {
   background: var(--surface-strong);
@@ -102,7 +101,6 @@ svg {
   box-shadow: var(--shadow);
 }
 
-.panel,
 .profile-card,
 .state-card {
   padding: 18px;
@@ -253,10 +251,6 @@ svg {
   align-items: center;
 }
 
-.profile-card--clean {
-  min-height: 156px;
-}
-
 .profile-card__content {
   display: grid;
   gap: 6px;
@@ -371,8 +365,8 @@ svg {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  padding: 10px;
-  border-radius: 24px;
+  padding: 4px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(21, 28, 45, 0.06);
   box-shadow: 0 16px 36px rgba(35, 47, 78, 0.12);
@@ -385,7 +379,8 @@ svg {
   background: transparent;
   color: var(--muted);
   padding: 12px 8px;
-  border-radius: 20px;
+  border-radius: 999px;
+  font-size: 14px;
   display: grid;
   place-items: center;
   gap: 6px;
@@ -404,7 +399,6 @@ svg {
 @media (max-width: 640px) {
   .screen-header,
   .panel__header,
-  .profile-card,
   .announcement-meta,
   .form-actions {
     align-items: stretch;

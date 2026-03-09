@@ -10,7 +10,7 @@ type ProfilePageProps = {
 export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: ProfilePageProps) {
   return (
     <>
-      <section className="profile-card page-section profile-card--clean">
+      <section className="profile-card page-section">
         <div className="avatar">
           {profile?.photoUrl ? <img src={profile.photoUrl} alt={profile.firstName} /> : <span>PR</span>}
         </div>
