@@ -106,6 +106,12 @@ svg {
   padding: 18px;
 }
 
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .panel {
   display: grid;
   gap: 14px;
@@ -116,8 +122,7 @@ svg {
 }
 
 .panel__header,
-.content-card__meta,
-.profile-card {
+.content-card__meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
