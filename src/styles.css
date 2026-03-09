@@ -15,6 +15,7 @@
 }
 
 :root[data-theme="dark"] {
+  --background: #0f0c11;
   --text: #f5f0ea;
   --muted: #c9b8ac;
   --surface: rgba(28, 24, 30, 0.88);
