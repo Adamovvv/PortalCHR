@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { allowMethods, handleApiError, readJson } from "./_lib/http";
-import { getSupabaseAdmin } from "./_lib/supabase";
-import { isAdminTelegramId, requireTelegramUser } from "./_lib/telegram";
+import { allowMethods, handleApiError, readJson } from "./_lib/http.js";
+import { getSupabaseAdmin } from "./_lib/supabase.js";
+import { isAdminTelegramId, requireTelegramUser } from "./_lib/telegram.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!allowMethods(req, res, ["POST"])) {

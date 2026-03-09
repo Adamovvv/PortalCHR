@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { getRequiredEnv, getAdminIds } from "./config";
+import { getRequiredEnv, getAdminIds } from "./config.js";
 
 type ParsedInitData = {
   authDate: number;
