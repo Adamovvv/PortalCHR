@@ -29,46 +29,48 @@ export function AnnouncementsPage({
   onOpenAnnouncement
 }: AnnouncementsPageProps) {
   return (
-    <section className="panel page-section">
-      <p className="subtle-copy">{ru.announcements.oneFree}</p>
+    <>
+      <section className="panel page-section">
+        <p className="subtle-copy">{ru.announcements.oneFree}</p>
 
-      <div className="filters-grid">
-        <label className="field-block field-block--compact">
-          <span>{ru.announcements.categoryFilterLabel}</span>
-          <select value={categoryFilter} onChange={(event) => onCategoryFilterChange(event.target.value as PortalAnnouncementCategory | "all")}>
-            <option value="all">{ru.announcements.allCategories}</option>
-            {announcementCategoryOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="filters-grid">
+          <label className="field-block field-block--compact">
+            <span>{ru.announcements.categoryFilterLabel}</span>
+            <select value={categoryFilter} onChange={(event) => onCategoryFilterChange(event.target.value as PortalAnnouncementCategory | "all")}>
+              <option value="all">{ru.announcements.allCategories}</option>
+              {announcementCategoryOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="field-block field-block--compact">
-          <span>{ru.announcements.priceFilterLabel}</span>
-          <select value={priceFilter} onChange={(event) => onPriceFilterChange(event.target.value as AnnouncementPriceFilter)}>
-            {announcementPriceFilterOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="field-block field-block--compact">
+            <span>{ru.announcements.priceFilterLabel}</span>
+            <select value={priceFilter} onChange={(event) => onPriceFilterChange(event.target.value as AnnouncementPriceFilter)}>
+              {announcementPriceFilterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="field-block field-block--compact">
-          <span>{ru.announcements.sortLabel}</span>
-          <select value={sortMode} onChange={(event) => onSortModeChange(event.target.value as AnnouncementSortMode)}>
-            {announcementSortOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+          <label className="field-block field-block--compact">
+            <span>{ru.announcements.sortLabel}</span>
+            <select value={sortMode} onChange={(event) => onSortModeChange(event.target.value as AnnouncementSortMode)}>
+              {announcementSortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </section>
 
-      <div className="stack">
+      <div className="announcement-grid">
         {announcements.length ? (
           announcements.map((item) => {
             const categoryLabel = announcementCategoryOptions.find((option) => option.value === item.category)?.label ?? item.category;
@@ -110,7 +112,7 @@ export function AnnouncementsPage({
           <StateCard title={ru.announcements.emptyTitle} text={ru.announcements.emptyText} />
         )}
       </div>
-    </section>
+    </>
   );
 }
 

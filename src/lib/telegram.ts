@@ -1,4 +1,4 @@
-import type { TelegramUser, TelegramWebApp, ThemeMode } from "../types";
+﻿import type { TelegramUser, TelegramWebApp, ThemeMode } from "../types";
 
 export function getTelegramWebApp(): TelegramWebApp | null {
   return window.Telegram?.WebApp ?? null;
@@ -18,9 +18,7 @@ export function getInitialTheme(): ThemeMode {
     return tgTheme;
   }
 
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function setupTelegramChrome() {
@@ -37,3 +35,23 @@ export function setupTelegramChrome() {
   }
 }
 
+export function bindTelegramBackButton(enabled: boolean, onBack: () => void) {
+  const webApp = getTelegramWebApp();
+  const backButton = webApp?.BackButton;
+
+  if (!backButton) {
+    return () => {};
+  }
+
+  if (enabled) {
+    backButton.show?.();
+    backButton.onClick?.(onBack);
+  } else {
+    backButton.hide?.();
+  }
+
+  return () => {
+    backButton.offClick?.(onBack);
+    backButton.hide?.();
+  };
+}

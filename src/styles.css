@@ -224,6 +224,12 @@ img {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.announcement-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .field-block--compact span {
   font-size: 13px;
 }
@@ -429,8 +435,8 @@ img {
   color: var(--accent);
 }
 
-.detail-back {
-  justify-self: start;
+.form-actions--end {
+  justify-content: flex-end;
 }
 
 .state-card {
@@ -551,10 +557,17 @@ img {
     flex-direction: column;
   }
 
-  .filters-grid,
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
   .detail-thumbs,
   .image-preview-grid {
     grid-template-columns: 1fr;
+  }
+
+  .announcement-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .primary-action,

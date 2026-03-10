@@ -74,12 +74,20 @@ export type TelegramUser = {
   photo_url?: string;
 };
 
+export type TelegramBackButton = {
+  show?: () => void;
+  hide?: () => void;
+  onClick?: (callback: () => void) => void;
+  offClick?: (callback: () => void) => void;
+};
+
 export type TelegramWebApp = {
   initData: string;
   initDataUnsafe: {
     user?: TelegramUser;
   };
   colorScheme?: ThemeMode;
+  BackButton?: TelegramBackButton;
   expand?: () => void;
   ready?: () => void;
   requestFullscreen?: () => void;

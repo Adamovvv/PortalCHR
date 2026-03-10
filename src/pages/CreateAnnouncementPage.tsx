@@ -20,7 +20,6 @@ type CreateAnnouncementPageProps = {
   }) => void;
   onFilesSelected: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onRemoveImage: (index: number) => void;
-  onBack: () => void;
   onSubmit: (event: FormEvent) => Promise<void>;
 };
 
@@ -30,7 +29,6 @@ export function CreateAnnouncementPage({
   onDraftChange,
   onFilesSelected,
   onRemoveImage,
-  onBack,
   onSubmit
 }: CreateAnnouncementPageProps) {
   return (
@@ -109,10 +107,7 @@ export function CreateAnnouncementPage({
           </div>
         ) : null}
 
-        <div className="form-actions">
-          <button className="secondary-action" type="button" onClick={onBack}>
-            {ru.createAnnouncement.cancel}
-          </button>
+        <div className="form-actions form-actions--end">
           <button className="primary-action" disabled={submitting} type="submit">
             {ru.createAnnouncement.submit}
           </button>

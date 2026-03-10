@@ -3,20 +3,15 @@ import type { PortalAnnouncement } from "../types";
 
 type AnnouncementDetailsPageProps = {
   announcement: PortalAnnouncement;
-  onBack: () => void;
 };
 
-export function AnnouncementDetailsPage({ announcement, onBack }: AnnouncementDetailsPageProps) {
+export function AnnouncementDetailsPage({ announcement }: AnnouncementDetailsPageProps) {
   const categoryLabel = announcementCategoryOptions.find((option) => option.value === announcement.category)?.label ?? announcement.category;
   const writeUrl = announcement.authorUsername ? `https://t.me/${announcement.authorUsername}` : null;
   const coverImage = announcement.imageUrls[0] ?? null;
 
   return (
     <section className="panel page-section panel--detail">
-      <button className="secondary-action detail-back" type="button" onClick={onBack}>
-        {ru.announcements.backButton}
-      </button>
-
       {coverImage ? (
         <div className="detail-cover-wrap">
           <img className="detail-cover" src={coverImage} alt={announcement.title} />

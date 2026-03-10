@@ -1,6 +1,12 @@
 ﻿import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { createAnnouncement, deleteAnnouncement, loadContent, syncProfile } from "./lib/api";
-import { getInitData, getInitialTheme, getTelegramUser, setupTelegramChrome } from "./lib/telegram";
+import {
+  bindTelegramBackButton,
+  getInitData,
+  getInitialTheme,
+  getTelegramUser,
+  setupTelegramChrome
+} from "./lib/telegram";
 import type {
   AnnouncementImageDraft,
   AnnouncementPriceFilter,
@@ -75,7 +81,7 @@ export function App() {
           ? ru.profile.title
           : activeScreen === "create-announcement"
             ? ru.createAnnouncement.title
-            : selectedAnnouncement?.title || ru.announcements.detailsTitle;
+            : "";
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -113,6 +119,21 @@ export function App() {
 
     void bootstrap();
   }, [initData]);
+
+  useEffect(() => {
+    const shouldShowBackButton = activeScreen === "create-announcement" || activeScreen === "announcement-detail";
+
+    return bindTelegramBackButton(shouldShowBackButton, () => {
+      if (activeScreen === "announcement-detail") {
+        setActiveScreen("announcements");
+        return;
+      }
+
+      if (activeScreen === "create-announcement") {
+        setActiveScreen("announcements");
+      }
+    });
+  }, [activeScreen]);
 
   const filteredNews = useMemo(() => {
     return content.news.filter((item) => {
@@ -257,14 +278,16 @@ export function App() {
   return (
     <div className="app-shell">
       <main className="app-frame">
-        <section className="screen-header">
-          <p className="screen-header__title">{screenTitle}</p>
-          {activeScreen === "announcements" ? (
-            <button className="primary-action" type="button" onClick={() => setActiveScreen("create-announcement")}>
-              {ru.announcements.addButton}
-            </button>
-          ) : null}
-        </section>
+        {screenTitle ? (
+          <section className="screen-header">
+            <p className="screen-header__title">{screenTitle}</p>
+            {activeScreen === "announcements" ? (
+              <button className="primary-action" type="button" onClick={() => setActiveScreen("create-announcement")}>
+                {ru.announcements.addButton}
+              </button>
+            ) : null}
+          </section>
+        ) : null}
 
         {activeScreen !== "profile" && activeScreen !== "create-announcement" && activeScreen !== "announcement-detail" && content.notice ? (
           <section className="marquee-card" aria-label={content.notice.title}>
@@ -322,16 +345,12 @@ export function App() {
                 onDraftChange={setAnnouncementDraft}
                 onFilesSelected={handleFilesSelected}
                 onRemoveImage={handleRemoveImage}
-                onBack={() => setActiveScreen("announcements")}
                 onSubmit={handleAnnouncementSubmit}
               />
             ) : null}
 
             {activeScreen === "announcement-detail" && selectedAnnouncement ? (
-              <AnnouncementDetailsPage
-                announcement={selectedAnnouncement}
-                onBack={() => setActiveScreen("announcements")}
-              />
+              <AnnouncementDetailsPage announcement={selectedAnnouncement} />
             ) : null}
           </>
         ) : null}
