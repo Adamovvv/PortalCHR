@@ -163,6 +163,15 @@ export function App() {
           ) : null}
         </section>
 
+        {activeScreen !== "profile" && activeScreen !== "create-announcement" && content.notice ? (
+          <section className="marquee-card" aria-label={content.notice.title}>
+            <div className="marquee-track">
+              <span>{content.notice.title}: {content.notice.body}</span>
+              <span>{content.notice.title}: {content.notice.body}</span>
+            </div>
+          </section>
+        ) : null}
+
         {activeScreen !== "profile" && activeScreen !== "create-announcement" ? (
           <label className="search-field">
             <input

@@ -11,28 +11,27 @@
   --shadow: 0 14px 34px rgba(35, 47, 78, 0.08);
   --safe-area-top: env(safe-area-inset-top, 0);
   --safe-area-bottom: env(safe-area-inset-bottom, 0);
-  --tg-header-height: var(--tg-content-safe-area-inset-top, 0); /* если TG его даёт */
+  --tg-header-height: var(--tg-content-safe-area-inset-top, 0);
 }
 
 :root[data-theme="dark"] {
   --text: #f5f0ea;
   --muted: #c4b5a8;
-  --surface: rgba(18, 15, 20, 0.92);        /* основной фон панелей и карточек */
+  --surface: rgba(18, 15, 20, 0.92);
   --surface-strong: rgba(28, 24, 32, 0.96);
   --border: rgba(255, 255, 255, 0.08);
   --shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
-
   --accent: #ff7043;
-  --accent-soft: rgba(255, 112, 67, 0.20);
+  --accent-soft: rgba(255, 112, 67, 0.2);
   --accent-strong: #ff5722;
 }
 
 [data-theme="dark"] body {
-  background: #0a070b;                      /* очень тёмный фон всего экрана */
+  background: #0a070b;
 }
 
 [data-theme="dark"] .app-shell {
-  background: transparent;                  /* чтобы не перекрывать body */
+  background: transparent;
 }
 
 [data-theme="dark"] .panel,
@@ -45,24 +44,10 @@
 
 [data-theme="dark"] .bottom-nav {
   background: rgba(28, 24, 32, 0.94);
-  border-color: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .search-field input,
-[data-theme="dark"] .field-block input,
-[data-theme="dark"] .field-block textarea,
-[data-theme="dark"] .field-block select {
-  background: rgba(38, 34, 42, 0.9);
-  border-color: rgba(255, 255, 255, 0.11);
-  color: var(--text);
-}
-
-[data-theme="dark"] .pill {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-/* Input / textarea / select в тёмной теме */
 [data-theme="dark"] .field-block input,
 [data-theme="dark"] .field-block textarea,
 [data-theme="dark"] .field-block select {
@@ -73,31 +58,18 @@
 
 [data-theme="dark"] .field-block input:focus,
 [data-theme="dark"] .field-block textarea:focus,
-[data-theme="dark"] .field-block select:focus {
+[data-theme="dark"] .field-block select:focus,
+[data-theme="dark"] .search-field input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(255, 107, 62, 0.22);
   background: rgba(55, 50, 58, 0.9);
 }
 
-/* Карточки */
-[data-theme="dark"] .content-card {
-  background: rgba(45, 40, 48, 0.92);
-  border-color: rgba(255, 255, 255, 0.07);
-}
-
-/* Pill */
 [data-theme="dark"] .pill {
   background: rgba(255, 107, 62, 0.22);
   color: var(--accent);
 }
 
-/* Bottom nav */
-[data-theme="dark"] .bottom-nav {
-  background: rgba(28, 24, 30, 0.92);
-  border-color: rgba(255, 255, 255, 0.10);
-}
-
-/* Кнопки */
 [data-theme="dark"] .secondary-action,
 [data-theme="dark"] .link-action {
   background: rgba(50, 45, 55, 0.85);
@@ -146,7 +118,6 @@ svg {
 .app-shell {
   position: relative;
   min-height: 100dvh;
-  /* Базовый отступ сверху */
   padding-top: calc(var(--safe-area-top, 0) + var(--tg-header-height, 0) + 12px);
   padding-bottom: calc(var(--safe-area-bottom, 0) + 68px + 16px);
   padding-left: 16px;
@@ -184,7 +155,8 @@ svg {
 }
 
 .profile-card,
-.state-card {
+.state-card,
+.marquee-card {
   background: var(--surface-strong);
   border: 1px solid var(--border);
   border-radius: 24px;
@@ -194,6 +166,36 @@ svg {
 .profile-card,
 .state-card {
   padding: 18px;
+}
+
+.marquee-card {
+  overflow: hidden;
+  padding: 12px 0;
+}
+
+.marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  min-width: max-content;
+  white-space: nowrap;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  animation: marquee-scroll 22s linear infinite;
+}
+
+.marquee-track span {
+  padding-left: 18px;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .profile-card {
@@ -457,34 +459,30 @@ svg {
   transform: translateX(-50%);
   z-index: 5;
   width: min(92vw, 520px);
-
-  /* Фиксированная высота */
   height: 68px;
   padding: 4px;
-
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(21, 28, 45, 0.06);
   box-shadow: 0 16px 36px rgba(35, 47, 78, 0.12);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  align-items: center;        /* ← важно */
-  gap: 4px;                   /* уменьшил gap */
+  align-items: center;
+  gap: 4px;
 }
 
 .bottom-nav__item {
-  height: 100%;               /* займёт всю высоту бара */
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;    /* центрируем иконку + текст вертикально */
-  gap: 3px;                   /* расстояние между иконкой и текстом */
+  justify-content: center;
+  gap: 3px;
   padding: 0 2px;
   border-radius: 999px;
-  font-size: 12px;            /* можно чуть уменьшить текст, если не влазит */
+  font-size: 12px;
   color: var(--muted);
   background: transparent;
   border: none;
@@ -496,7 +494,7 @@ svg {
 }
 
 .bottom-nav__icon {
-  font-size: 22px;            /* можно чуть увеличить иконки */
+  font-size: 22px;
   line-height: 1;
   margin-bottom: 1px;
 }
@@ -516,4 +514,3 @@ svg {
     width: 100%;
   }
 }
-
