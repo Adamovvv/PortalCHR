@@ -1,5 +1,12 @@
 ﻿import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
-import { createAnnouncement, deleteAnnouncement, loadContent, syncProfile } from "./lib/api";
+import {
+  createAnnouncement,
+  createCommunityItem,
+  createQuestionAnswer,
+  deleteAnnouncement,
+  loadContent,
+  syncProfile
+} from "./lib/api";
 import {
   bindTelegramBackButton,
   getInitData,
@@ -11,32 +18,51 @@ import type {
   AnnouncementImageDraft,
   AnnouncementPriceFilter,
   AnnouncementSortMode,
+  CommunityItemKind,
   PortalAnnouncement,
   PortalAnnouncementCategory,
+  PortalCommunityItem,
   PortalContent,
   ThemeMode
 } from "./types";
-import { ru } from "./content/ru";
+import { hubTabs, ru } from "./content/ru";
 import { StateCard } from "./components/StateCard";
-import { HomePage } from "./pages/HomePage";
 import { AnnouncementsPage } from "./pages/AnnouncementsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { CreateAnnouncementPage } from "./pages/CreateAnnouncementPage";
 import { AnnouncementDetailsPage } from "./pages/AnnouncementDetailsPage";
+import { EventsPage } from "./pages/EventsPage";
+import { CommunityBoardPage } from "./pages/CommunityBoardPage";
+import { CreateSimplePostPage } from "./pages/CreateSimplePostPage";
+import { QuestionsPage } from "./pages/QuestionsPage";
+import { QuestionDetailsPage } from "./pages/QuestionDetailsPage";
 
-type ScreenKey = "home" | "announcements" | "profile" | "create-announcement" | "announcement-detail";
+type ScreenKey =
+  | "home"
+  | "profile"
+  | "create-announcement"
+  | "create-problem"
+  | "create-lost-found"
+  | "create-question"
+  | "announcement-detail"
+  | "question-detail";
+
+type HomeTabKey = (typeof hubTabs)[number]["key"];
 
 const emptyContent: PortalContent = {
   profile: null,
   notice: null,
   news: [],
   announcements: [],
-  myAnnouncements: []
+  myAnnouncements: [],
+  problems: [],
+  lostFound: [],
+  questions: [],
+  questionAnswers: []
 };
 
-const tabs: Array<{ key: Exclude<ScreenKey, "create-announcement" | "announcement-detail">; label: string }> = [
+const bottomTabs: Array<{ key: "home" | "profile"; label: string }> = [
   { key: "home", label: ru.nav.home },
-  { key: "announcements", label: ru.nav.announcements },
   { key: "profile", label: ru.nav.profile }
 ];
 
@@ -45,15 +71,20 @@ const MAX_IMAGES = 3;
 export function App() {
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme());
   const [activeScreen, setActiveScreen] = useState<ScreenKey>("home");
+  const [activeHomeTab, setActiveHomeTab] = useState<HomeTabKey>("announcements");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<PortalAnnouncement | null>(null);
+  const [selectedQuestion, setSelectedQuestion] = useState<PortalCommunityItem | null>(null);
   const [content, setContent] = useState<PortalContent>(emptyContent);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submittingAnnouncement, setSubmittingAnnouncement] = useState(false);
+  const [submittingCommunity, setSubmittingCommunity] = useState(false);
+  const [submittingAnswer, setSubmittingAnswer] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<PortalAnnouncementCategory | "all">("all");
   const [priceFilter, setPriceFilter] = useState<AnnouncementPriceFilter>("all");
   const [sortMode, setSortMode] = useState<AnnouncementSortMode>("newest");
+  const [questionAnswerDraft, setQuestionAnswerDraft] = useState("");
   const [announcementDraft, setAnnouncementDraft] = useState<{
     title: string;
     category: PortalAnnouncementCategory;
@@ -67,6 +98,10 @@ export function App() {
     price: "",
     images: []
   });
+  const [communityDraft, setCommunityDraft] = useState({
+    title: "",
+    body: ""
+  });
 
   const initData = getInitData();
   const telegramUser = getTelegramUser();
@@ -75,13 +110,19 @@ export function App() {
   const screenTitle =
     activeScreen === "home"
       ? ru.app.subtitle
-      : activeScreen === "announcements"
-        ? ru.announcements.title
-        : activeScreen === "profile"
-          ? ru.profile.title
-          : activeScreen === "create-announcement"
-            ? ru.createAnnouncement.title
-            : "";
+      : activeScreen === "profile"
+        ? ru.profile.title
+        : activeScreen === "create-announcement"
+          ? ru.createAnnouncement.title
+          : activeScreen === "create-problem"
+            ? ru.createProblem.title
+            : activeScreen === "create-lost-found"
+              ? ru.createLostFound.title
+              : activeScreen === "create-question"
+                ? ru.createQuestion.title
+                : activeScreen === "question-detail"
+                  ? ru.questions.detailTitle
+                  : "";
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -121,69 +162,61 @@ export function App() {
   }, [initData]);
 
   useEffect(() => {
-    const shouldShowBackButton = activeScreen === "create-announcement" || activeScreen === "announcement-detail";
+    const shouldShowBackButton = activeScreen !== "home" && activeScreen !== "profile";
 
     return bindTelegramBackButton(shouldShowBackButton, () => {
-      if (activeScreen === "announcement-detail") {
-        setActiveScreen("announcements");
+      if (activeScreen === "announcement-detail" || activeScreen === "question-detail") {
+        setActiveScreen("home");
         return;
       }
 
-      if (activeScreen === "create-announcement") {
-        setActiveScreen("announcements");
-      }
+      setActiveScreen("home");
     });
   }, [activeScreen]);
-
-  const filteredNews = useMemo(() => {
-    return content.news.filter((item) => {
-      const text = `${item.title} ${item.summary} ${item.category}`.toLowerCase();
-      return text.includes(query.toLowerCase());
-    });
-  }, [content.news, query]);
 
   const filteredAnnouncements = useMemo(() => {
     const normalizedQuery = query.toLowerCase();
 
     return [...content.announcements]
-      .filter((item) => {
-        const text = `${item.title} ${item.body} ${item.category} ${item.authorName}`.toLowerCase();
-        return text.includes(normalizedQuery);
-      })
+      .filter((item) => `${item.title} ${item.body} ${item.category} ${item.authorName}`.toLowerCase().includes(normalizedQuery))
       .filter((item) => (categoryFilter === "all" ? true : item.category === categoryFilter))
       .filter((item) => {
-        if (priceFilter === "free") {
-          return item.price === null;
-        }
-
-        if (priceFilter === "paid") {
-          return item.price !== null;
-        }
-
+        if (priceFilter === "free") return item.price === null;
+        if (priceFilter === "paid") return item.price !== null;
         return true;
       })
       .sort((left, right) => {
-        if (sortMode === "oldest") {
-          return new Date(left.publishedAt).getTime() - new Date(right.publishedAt).getTime();
-        }
-
-        if (sortMode === "cheap") {
-          return (left.price ?? 0) - (right.price ?? 0);
-        }
-
-        if (sortMode === "expensive") {
-          return (right.price ?? 0) - (left.price ?? 0);
-        }
-
+        if (sortMode === "oldest") return new Date(left.publishedAt).getTime() - new Date(right.publishedAt).getTime();
+        if (sortMode === "cheap") return (left.price ?? 0) - (right.price ?? 0);
+        if (sortMode === "expensive") return (right.price ?? 0) - (left.price ?? 0);
         return new Date(right.publishedAt).getTime() - new Date(left.publishedAt).getTime();
       });
   }, [categoryFilter, content.announcements, priceFilter, query, sortMode]);
 
+  const filteredProblems = useMemo(
+    () => filterCommunityItems(content.problems, query),
+    [content.problems, query]
+  );
+  const filteredLostFound = useMemo(
+    () => filterCommunityItems(content.lostFound, query),
+    [content.lostFound, query]
+  );
+  const filteredQuestions = useMemo(
+    () => filterCommunityItems(content.questions, query),
+    [content.questions, query]
+  );
+  const filteredEvents = useMemo(
+    () => content.news.filter((item) => `${item.title} ${item.summary} ${item.category}`.toLowerCase().includes(query.toLowerCase())),
+    [content.news, query]
+  );
+  const selectedQuestionAnswers = useMemo(
+    () => content.questionAnswers.filter((item) => item.questionId === selectedQuestion?.id),
+    [content.questionAnswers, selectedQuestion]
+  );
+
   async function handleAnnouncementSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!announcementDraft.title.trim() || !announcementDraft.body.trim()) {
-      return;
-    }
+    if (!announcementDraft.title.trim() || !announcementDraft.body.trim()) return;
 
     try {
       setSubmittingAnnouncement(true);
@@ -195,16 +228,59 @@ export function App() {
         price: announcementDraft.price.trim() ? Number(announcementDraft.price) : null,
         images: announcementDraft.images
       });
-      setContent((current) => ({
-        ...current,
-        myAnnouncements: [created, ...current.myAnnouncements]
-      }));
+      setContent((current) => ({ ...current, myAnnouncements: [created, ...current.myAnnouncements] }));
       setAnnouncementDraft({ title: "", category: "other", body: "", price: "", images: [] });
       setActiveScreen("profile");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
     } finally {
       setSubmittingAnnouncement(false);
+    }
+  }
+
+  async function handleCommunitySubmit(event: FormEvent, kind: CommunityItemKind) {
+    event.preventDefault();
+    if (!communityDraft.title.trim() || !communityDraft.body.trim()) return;
+
+    try {
+      setSubmittingCommunity(true);
+      setError(null);
+      const created = await createCommunityItem(initData, {
+        kind,
+        title: communityDraft.title.trim(),
+        body: communityDraft.body.trim()
+      }) as PortalCommunityItem;
+
+      setContent((current) => ({
+        ...current,
+        problems: kind === "problem" ? [created, ...current.problems] : current.problems,
+        lostFound: kind === "lost_found" ? [created, ...current.lostFound] : current.lostFound,
+        questions: kind === "question" ? [created, ...current.questions] : current.questions
+      }));
+      setCommunityDraft({ title: "", body: "" });
+      setActiveScreen("home");
+      setActiveHomeTab(kind === "problem" ? "problems" : kind === "lost_found" ? "lost-found" : "answers");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
+    } finally {
+      setSubmittingCommunity(false);
+    }
+  }
+
+  async function handleQuestionAnswerSubmit(event: FormEvent) {
+    event.preventDefault();
+    if (!selectedQuestion || !questionAnswerDraft.trim()) return;
+
+    try {
+      setSubmittingAnswer(true);
+      setError(null);
+      const created = await createQuestionAnswer(initData, selectedQuestion.id, questionAnswerDraft.trim());
+      setContent((current) => ({ ...current, questionAnswers: [...current.questionAnswers, created] }));
+      setQuestionAnswerDraft("");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
+    } finally {
+      setSubmittingAnswer(false);
     }
   }
 
@@ -217,11 +293,6 @@ export function App() {
         myAnnouncements: current.myAnnouncements.filter((item) => item.id !== announcementId),
         announcements: current.announcements.filter((item) => item.id !== announcementId)
       }));
-
-      if (selectedAnnouncement?.id === announcementId) {
-        setSelectedAnnouncement(null);
-        setActiveScreen("announcements");
-      }
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
     }
@@ -229,10 +300,7 @@ export function App() {
 
   async function handleFilesSelected(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
-
-    if (!files.length) {
-      return;
-    }
+    if (!files.length) return;
 
     if (announcementDraft.images.length + files.length > MAX_IMAGES) {
       setError(ru.createAnnouncement.fileLimitError);
@@ -243,19 +311,11 @@ export function App() {
     try {
       setError(null);
       const nextImages: AnnouncementImageDraft[] = [];
-
       for (const file of files) {
-        if (!file.type.startsWith("image/")) {
-          throw new Error(ru.createAnnouncement.fileTypeError);
-        }
-
+        if (!file.type.startsWith("image/")) throw new Error(ru.createAnnouncement.fileTypeError);
         nextImages.push(await prepareImageDraft(file));
       }
-
-      setAnnouncementDraft((current) => ({
-        ...current,
-        images: [...current.images, ...nextImages]
-      }));
+      setAnnouncementDraft((current) => ({ ...current, images: [...current.images, ...nextImages] }));
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : ru.createAnnouncement.fileReadError);
     } finally {
@@ -264,15 +324,17 @@ export function App() {
   }
 
   function handleRemoveImage(index: number) {
-    setAnnouncementDraft((current) => ({
-      ...current,
-      images: current.images.filter((_, imageIndex) => imageIndex !== index)
-    }));
+    setAnnouncementDraft((current) => ({ ...current, images: current.images.filter((_, imageIndex) => imageIndex !== index) }));
   }
 
   function openAnnouncement(announcement: PortalAnnouncement) {
     setSelectedAnnouncement(announcement);
     setActiveScreen("announcement-detail");
+  }
+
+  function openQuestion(question: PortalCommunityItem) {
+    setSelectedQuestion(question);
+    setActiveScreen("question-detail");
   }
 
   return (
@@ -281,15 +343,10 @@ export function App() {
         {screenTitle ? (
           <section className="screen-header">
             <p className="screen-header__title">{screenTitle}</p>
-            {activeScreen === "announcements" ? (
-              <button className="primary-action" type="button" onClick={() => setActiveScreen("create-announcement")}>
-                {ru.announcements.addButton}
-              </button>
-            ) : null}
           </section>
         ) : null}
 
-        {activeScreen !== "profile" && activeScreen !== "create-announcement" && activeScreen !== "announcement-detail" && content.notice ? (
+        {activeScreen === "home" && content.notice ? (
           <section className="marquee-card" aria-label={content.notice.title}>
             <div className="marquee-track">
               <span>{content.notice.title}: {content.notice.body}</span>
@@ -298,14 +355,25 @@ export function App() {
           </section>
         ) : null}
 
-        {activeScreen !== "profile" && activeScreen !== "create-announcement" && activeScreen !== "announcement-detail" ? (
-          <label className="search-field">
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={ru.app.searchPlaceholder}
-            />
-          </label>
+        {activeScreen === "home" ? (
+          <>
+            <label className="search-field">
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ru.app.searchPlaceholder} />
+            </label>
+
+            <section className="hub-tabs" aria-label={ru.hub.tabsAria}>
+              {hubTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  className={`hub-tab ${activeHomeTab === tab.key ? "is-active" : ""}`}
+                  onClick={() => setActiveHomeTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </section>
+          </>
         ) : null}
 
         {loading ? <StateCard title={ru.app.loadingTitle} text={ru.app.loadingText} /> : null}
@@ -313,11 +381,7 @@ export function App() {
 
         {!loading && !error ? (
           <>
-            {activeScreen === "home" ? (
-              <HomePage news={filteredNews} username={displayName || ru.common.telegramUserFallback} />
-            ) : null}
-
-            {activeScreen === "announcements" ? (
+            {activeScreen === "home" && activeHomeTab === "announcements" ? (
               <AnnouncementsPage
                 announcements={filteredAnnouncements}
                 categoryFilter={categoryFilter}
@@ -330,12 +394,36 @@ export function App() {
               />
             ) : null}
 
-            {activeScreen === "profile" ? (
-              <ProfilePage
-                profile={content.profile}
-                announcements={content.myAnnouncements}
-                onDeleteAnnouncement={handleAnnouncementDelete}
+            {activeScreen === "home" && activeHomeTab === "problems" ? (
+              <CommunityBoardPage
+                title={ru.problems.title}
+                addLabel={ru.problems.addButton}
+                emptyTitle={ru.problems.emptyTitle}
+                emptyText={ru.problems.emptyText}
+                items={filteredProblems}
+                onAdd={() => setActiveScreen("create-problem")}
               />
+            ) : null}
+
+            {activeScreen === "home" && activeHomeTab === "lost-found" ? (
+              <CommunityBoardPage
+                title={ru.lostFound.title}
+                addLabel={ru.lostFound.addButton}
+                emptyTitle={ru.lostFound.emptyTitle}
+                emptyText={ru.lostFound.emptyText}
+                items={filteredLostFound}
+                onAdd={() => setActiveScreen("create-lost-found")}
+              />
+            ) : null}
+
+            {activeScreen === "home" && activeHomeTab === "answers" ? (
+              <QuestionsPage items={filteredQuestions} onAdd={() => setActiveScreen("create-question")} onOpen={openQuestion} />
+            ) : null}
+
+            {activeScreen === "home" && activeHomeTab === "events" ? <EventsPage events={filteredEvents} /> : null}
+
+            {activeScreen === "profile" ? (
+              <ProfilePage profile={content.profile} announcements={content.myAnnouncements} onDeleteAnnouncement={handleAnnouncementDelete} />
             ) : null}
 
             {activeScreen === "create-announcement" ? (
@@ -349,24 +437,82 @@ export function App() {
               />
             ) : null}
 
+            {activeScreen === "create-problem" ? (
+              <CreateSimplePostPage
+                eyebrow={ru.createProblem.eyebrow}
+                title={ru.createProblem.title}
+                subtitle={ru.createProblem.subtitle}
+                titleValue={communityDraft.title}
+                bodyValue={communityDraft.body}
+                titlePlaceholder={ru.createProblem.namePlaceholder}
+                bodyPlaceholder={ru.createProblem.bodyPlaceholder}
+                submitting={submittingCommunity}
+                onTitleChange={(value) => setCommunityDraft((current) => ({ ...current, title: value }))}
+                onBodyChange={(value) => setCommunityDraft((current) => ({ ...current, body: value }))}
+                onSubmit={(event) => handleCommunitySubmit(event, "problem")}
+              />
+            ) : null}
+
+            {activeScreen === "create-lost-found" ? (
+              <CreateSimplePostPage
+                eyebrow={ru.createLostFound.eyebrow}
+                title={ru.createLostFound.title}
+                subtitle={ru.createLostFound.subtitle}
+                titleValue={communityDraft.title}
+                bodyValue={communityDraft.body}
+                titlePlaceholder={ru.createLostFound.namePlaceholder}
+                bodyPlaceholder={ru.createLostFound.bodyPlaceholder}
+                submitting={submittingCommunity}
+                onTitleChange={(value) => setCommunityDraft((current) => ({ ...current, title: value }))}
+                onBodyChange={(value) => setCommunityDraft((current) => ({ ...current, body: value }))}
+                onSubmit={(event) => handleCommunitySubmit(event, "lost_found")}
+              />
+            ) : null}
+
+            {activeScreen === "create-question" ? (
+              <CreateSimplePostPage
+                eyebrow={ru.createQuestion.eyebrow}
+                title={ru.createQuestion.title}
+                subtitle={ru.createQuestion.subtitle}
+                titleValue={communityDraft.title}
+                bodyValue={communityDraft.body}
+                titlePlaceholder={ru.createQuestion.namePlaceholder}
+                bodyPlaceholder={ru.createQuestion.bodyPlaceholder}
+                submitting={submittingCommunity}
+                onTitleChange={(value) => setCommunityDraft((current) => ({ ...current, title: value }))}
+                onBodyChange={(value) => setCommunityDraft((current) => ({ ...current, body: value }))}
+                onSubmit={(event) => handleCommunitySubmit(event, "question")}
+              />
+            ) : null}
+
             {activeScreen === "announcement-detail" && selectedAnnouncement ? (
               <AnnouncementDetailsPage announcement={selectedAnnouncement} />
+            ) : null}
+
+            {activeScreen === "question-detail" && selectedQuestion ? (
+              <QuestionDetailsPage
+                question={selectedQuestion}
+                answers={selectedQuestionAnswers}
+                answerDraft={questionAnswerDraft}
+                submitting={submittingAnswer}
+                onAnswerDraftChange={setQuestionAnswerDraft}
+                onSubmitAnswer={handleQuestionAnswerSubmit}
+              />
             ) : null}
           </>
         ) : null}
       </main>
 
       <nav className="bottom-nav" aria-label={ru.app.title}>
-        {tabs.map((tab) => (
+        {bottomTabs.map((tab) => (
           <button
             key={tab.key}
             type="button"
             className={`bottom-nav__item ${activeScreen === tab.key ? "is-active" : ""}`}
             onClick={() => {
               setActiveScreen(tab.key);
-              if (tab.key !== "announcements") {
-                setSelectedAnnouncement(null);
-              }
+              setSelectedAnnouncement(null);
+              setSelectedQuestion(null);
             }}
           >
             <span className="bottom-nav__icon">
@@ -380,7 +526,7 @@ export function App() {
   );
 }
 
-function NavIcon({ tab, active }: { tab: Exclude<ScreenKey, "create-announcement" | "announcement-detail">; active: boolean }) {
+function NavIcon({ tab, active }: { tab: "home" | "profile"; active: boolean }) {
   const color = active ? "currentColor" : "currentColor";
 
   if (tab === "home") {
@@ -392,22 +538,17 @@ function NavIcon({ tab, active }: { tab: Exclude<ScreenKey, "create-announcement
     );
   }
 
-  if (tab === "announcements") {
-    return (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="5" y="5" width="14" height="14" rx="3" stroke={color} strokeWidth="1.8" />
-        <path d="M8 10H16" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M8 14H13" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <circle cx="12" cy="8" r="3.5" stroke={color} strokeWidth="1.8" />
       <path d="M5.5 19C6.7 15.9 9.1 14.5 12 14.5C14.9 14.5 17.3 15.9 18.5 19" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
+}
+
+function filterCommunityItems(items: PortalCommunityItem[], query: string) {
+  const normalizedQuery = query.toLowerCase();
+  return items.filter((item) => `${item.title} ${item.body} ${item.authorName}`.toLowerCase().includes(normalizedQuery));
 }
 
 async function prepareImageDraft(file: File): Promise<AnnouncementImageDraft> {

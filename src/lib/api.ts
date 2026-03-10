@@ -1,11 +1,13 @@
 ﻿import type {
   AnnouncementImageDraft,
+  CommunityItemKind,
   PortalAnnouncement,
   PortalAnnouncementCategory,
   PortalContent,
   PortalNews,
   PortalNotice,
-  PortalProfile
+  PortalProfile,
+  PortalQuestionAnswer
 } from "../types";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -71,6 +73,31 @@ export async function createAnnouncement(
   return request<PortalAnnouncement>("/api/admin/announcement", {
     method: "POST",
     body: JSON.stringify({ initData, ...payload })
+  });
+}
+
+export async function createCommunityItem(
+  initData: string,
+  payload: {
+    kind: CommunityItemKind;
+    title: string;
+    body: string;
+  }
+) {
+  return request("/api/community/create", {
+    method: "POST",
+    body: JSON.stringify({ initData, ...payload })
+  });
+}
+
+export async function createQuestionAnswer(
+  initData: string,
+  questionId: string,
+  body: string
+): Promise<PortalQuestionAnswer> {
+  return request<PortalQuestionAnswer>("/api/question/answer", {
+    method: "POST",
+    body: JSON.stringify({ initData, questionId, body })
   });
 }
 

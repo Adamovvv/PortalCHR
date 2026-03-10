@@ -1,4 +1,4 @@
-import { announcementCategoryOptions, announcementStatusLabels, ru } from "../content/ru";
+﻿import { announcementCategoryOptions, announcementStatusLabels, ru } from "../content/ru";
 import type { PortalAnnouncement, PortalProfile } from "../types";
 
 type ProfilePageProps = {
@@ -17,9 +17,7 @@ export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: Pr
         <div className="profile-card__content">
           <h3>{[profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || ru.profile.fallbackName}</h3>
           <p>@{profile?.username || ru.profile.missingUsername}</p>
-          <p>
-            {ru.profile.telegramId}: {profile?.telegramId ?? "-"}
-          </p>
+          <p>{ru.profile.telegramId}: {profile?.telegramId ?? "-"}</p>
         </div>
       </section>
 
@@ -33,8 +31,7 @@ export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: Pr
         <div className="stack">
           {announcements.length ? (
             announcements.map((item) => {
-              const categoryLabel =
-                announcementCategoryOptions.find((option) => option.value === item.category)?.label ?? item.category;
+              const categoryLabel = announcementCategoryOptions.find((option) => option.value === item.category)?.label ?? item.category;
 
               return (
                 <article className="content-card content-card--announcement" key={item.id}>
@@ -46,7 +43,7 @@ export function ProfilePage({ profile, announcements, onDeleteAnnouncement }: Pr
                   <p>{item.body}</p>
                   <div className="announcement-meta">
                     <span>{formatDate(item.publishedAt)}</span>
-                    <strong>{item.price !== null ? `${item.price} ?` : ru.announcements.freeLabel}</strong>
+                    <strong>{item.price !== null ? `${item.price} ₽` : ru.announcements.freeLabel}</strong>
                   </div>
                   <button className="secondary-action" type="button" onClick={() => void onDeleteAnnouncement(item.id)}>
                     {ru.profile.deleteButton}

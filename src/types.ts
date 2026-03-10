@@ -49,12 +49,38 @@ export type PortalAnnouncement = {
   publishedAt: string;
 };
 
+export type CommunityItemKind = "problem" | "lost_found" | "question";
+
+export type PortalCommunityItem = {
+  id: string;
+  title: string;
+  body: string;
+  authorName: string;
+  authorUsername: string | null;
+  authorTelegramId: number;
+  createdAt: string;
+};
+
+export type PortalQuestionAnswer = {
+  id: string;
+  questionId: string;
+  body: string;
+  authorName: string;
+  authorUsername: string | null;
+  authorTelegramId: number;
+  createdAt: string;
+};
+
 export type PortalContent = {
   profile: PortalProfile | null;
   notice: PortalNotice | null;
   news: PortalNews[];
   announcements: PortalAnnouncement[];
   myAnnouncements: PortalAnnouncement[];
+  problems: PortalCommunityItem[];
+  lostFound: PortalCommunityItem[];
+  questions: PortalCommunityItem[];
+  questionAnswers: PortalQuestionAnswer[];
 };
 
 export type AnnouncementImageDraft = {
