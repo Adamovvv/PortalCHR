@@ -30,18 +30,18 @@ export const announcementPriceFilterOptions: Array<{ value: AnnouncementPriceFil
 ];
 
 export const hubTabs = [
+  { key: "news", label: "Новости" },
   { key: "announcements", label: "Объявления" },
   { key: "problems", label: "Проблемы" },
   { key: "lost-found", label: "Потеряшки" },
-  { key: "answers", label: "Ответы" },
-  { key: "events", label: "Афиша" }
+  { key: "answers", label: "Ответы" }
 ] as const;
 
 export const ru = {
   app: {
     title: "Портал Республики",
     subtitle: "Единое пространство новостей, объявлений и сервиса",
-    searchPlaceholder: "Поиск по объявлениям, проблемам и афише",
+    searchPlaceholder: "Поиск по новостям, объявлениям и проблемам",
     loadingTitle: "Загрузка",
     loadingText: "Подключаю Telegram и Supabase...",
     errorTitle: "Ошибка",
@@ -55,10 +55,10 @@ export const ru = {
   hub: {
     tabsAria: "Разделы портала"
   },
-  events: {
-    title: "Афиша",
-    emptyTitle: "Афиша пока пустая",
-    emptyText: "События и анонсы появятся после первой публикации."
+  news: {
+    title: "Новости",
+    emptyTitle: "Новостей пока нет",
+    emptyText: "Новости появятся после первой публикации."
   },
   announcements: {
     title: "Объявления",

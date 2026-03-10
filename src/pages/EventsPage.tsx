@@ -12,7 +12,7 @@ export function EventsPage({ events }: EventsPageProps) {
       <section className="panel page-section">
         <div className="panel__header panel__header--stack">
           <div>
-            <h3>{ru.events.title}</h3>
+            <h3>{ru.news.title}</h3>
           </div>
           <span className="pill">{events.length}</span>
         </div>
@@ -31,7 +31,7 @@ export function EventsPage({ events }: EventsPageProps) {
             </article>
           ))
         ) : (
-          <StateCard title={ru.events.emptyTitle} text={ru.events.emptyText} />
+          <StateCard title={ru.news.emptyTitle} text={ru.news.emptyText} />
         )}
       </div>
     </>

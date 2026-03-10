@@ -70,7 +70,7 @@ export function AnnouncementsPage({
         </div>
       </section>
 
-      <div className="announcement-grid">
+      <div className={`announcement-grid ${announcements.length === 1 ? "announcement-grid--single" : ""}`}>
         {announcements.length ? (
           announcements.map((item) => {
             const categoryLabel = announcementCategoryOptions.find((option) => option.value === item.category)?.label ?? item.category;

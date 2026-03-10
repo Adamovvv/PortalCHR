@@ -71,7 +71,7 @@ const MAX_IMAGES = 3;
 export function App() {
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme());
   const [activeScreen, setActiveScreen] = useState<ScreenKey>("home");
-  const [activeHomeTab, setActiveHomeTab] = useState<HomeTabKey>("announcements");
+  const [activeHomeTab, setActiveHomeTab] = useState<HomeTabKey>("news");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<PortalAnnouncement | null>(null);
   const [selectedQuestion, setSelectedQuestion] = useState<PortalCommunityItem | null>(null);
   const [content, setContent] = useState<PortalContent>(emptyContent);
@@ -98,14 +98,10 @@ export function App() {
     price: "",
     images: []
   });
-  const [communityDraft, setCommunityDraft] = useState({
-    title: "",
-    body: ""
-  });
+  const [communityDraft, setCommunityDraft] = useState({ title: "", body: "" });
 
   const initData = getInitData();
   const telegramUser = getTelegramUser();
-  const displayName = [telegramUser?.first_name, telegramUser?.last_name].filter(Boolean).join(" ");
 
   const screenTitle =
     activeScreen === "home"
@@ -193,19 +189,10 @@ export function App() {
       });
   }, [categoryFilter, content.announcements, priceFilter, query, sortMode]);
 
-  const filteredProblems = useMemo(
-    () => filterCommunityItems(content.problems, query),
-    [content.problems, query]
-  );
-  const filteredLostFound = useMemo(
-    () => filterCommunityItems(content.lostFound, query),
-    [content.lostFound, query]
-  );
-  const filteredQuestions = useMemo(
-    () => filterCommunityItems(content.questions, query),
-    [content.questions, query]
-  );
-  const filteredEvents = useMemo(
+  const filteredProblems = useMemo(() => filterCommunityItems(content.problems, query), [content.problems, query]);
+  const filteredLostFound = useMemo(() => filterCommunityItems(content.lostFound, query), [content.lostFound, query]);
+  const filteredQuestions = useMemo(() => filterCommunityItems(content.questions, query), [content.questions, query]);
+  const filteredNews = useMemo(
     () => content.news.filter((item) => `${item.title} ${item.summary} ${item.category}`.toLowerCase().includes(query.toLowerCase())),
     [content.news, query]
   );
@@ -245,11 +232,11 @@ export function App() {
     try {
       setSubmittingCommunity(true);
       setError(null);
-      const created = await createCommunityItem(initData, {
+      const created = (await createCommunityItem(initData, {
         kind,
         title: communityDraft.title.trim(),
         body: communityDraft.body.trim()
-      }) as PortalCommunityItem;
+      })) as PortalCommunityItem;
 
       setContent((current) => ({
         ...current,
@@ -381,6 +368,8 @@ export function App() {
 
         {!loading && !error ? (
           <>
+            {activeScreen === "home" && activeHomeTab === "news" ? <EventsPage events={filteredNews} /> : null}
+
             {activeScreen === "home" && activeHomeTab === "announcements" ? (
               <AnnouncementsPage
                 announcements={filteredAnnouncements}
@@ -419,8 +408,6 @@ export function App() {
             {activeScreen === "home" && activeHomeTab === "answers" ? (
               <QuestionsPage items={filteredQuestions} onAdd={() => setActiveScreen("create-question")} onOpen={openQuestion} />
             ) : null}
-
-            {activeScreen === "home" && activeHomeTab === "events" ? <EventsPage events={filteredEvents} /> : null}
 
             {activeScreen === "profile" ? (
               <ProfilePage profile={content.profile} announcements={content.myAnnouncements} onDeleteAnnouncement={handleAnnouncementDelete} />
@@ -485,9 +472,7 @@ export function App() {
               />
             ) : null}
 
-            {activeScreen === "announcement-detail" && selectedAnnouncement ? (
-              <AnnouncementDetailsPage announcement={selectedAnnouncement} />
-            ) : null}
+            {activeScreen === "announcement-detail" && selectedAnnouncement ? <AnnouncementDetailsPage announcement={selectedAnnouncement} /> : null}
 
             {activeScreen === "question-detail" && selectedQuestion ? (
               <QuestionDetailsPage
