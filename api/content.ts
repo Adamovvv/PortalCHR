@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+﻿import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { allowMethods, handleApiError, readJson } from "./_lib/http.js";
 import { getSupabaseAdmin } from "./_lib/supabase.js";
 import { isAdminTelegramId, requireTelegramUser } from "./_lib/telegram.js";
@@ -41,6 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       authorTelegramId: item.author_telegram_id,
       price: item.price,
       status: item.status,
+      imageUrls: item.image_urls ?? [],
       publishedAt: item.published_at
     });
 

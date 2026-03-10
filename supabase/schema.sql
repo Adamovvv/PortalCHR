@@ -1,4 +1,4 @@
-create extension if not exists "pgcrypto";
+﻿create extension if not exists "pgcrypto";
 
 create table if not exists public.profiles (
   id uuid primary key default gen_random_uuid(),
@@ -36,6 +36,7 @@ create table if not exists public.announcements (
   author_name text not null default 'Telegram User',
   author_username text,
   price numeric(12,2),
+  image_urls text[] not null default '{}',
   is_free boolean not null default true,
   status text not null default 'pending',
   moderated_by bigint,
@@ -48,6 +49,7 @@ alter table public.announcements add column if not exists category text not null
 alter table public.announcements add column if not exists author_name text not null default 'Telegram User';
 alter table public.announcements add column if not exists author_username text;
 alter table public.announcements add column if not exists price numeric(12,2);
+alter table public.announcements add column if not exists image_urls text[] not null default '{}';
 alter table public.announcements add column if not exists is_free boolean not null default true;
 alter table public.announcements add column if not exists status text not null default 'pending';
 alter table public.announcements add column if not exists moderated_by bigint;
@@ -109,3 +111,16 @@ on public.announcements
 for select
 to anon
 using (false);
+
+insert into storage.buckets (id, name, public)
+select 'portal-announcements', 'portal-announcements', true
+where not exists (
+  select 1 from storage.buckets where id = 'portal-announcements'
+);
+
+drop policy if exists "public read portal announcement images" on storage.objects;
+create policy "public read portal announcement images"
+on storage.objects
+for select
+to public
+using (bucket_id = 'portal-announcements');

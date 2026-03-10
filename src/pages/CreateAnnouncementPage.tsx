@@ -1,6 +1,6 @@
-import type { FormEvent } from "react";
+﻿import type { ChangeEvent, FormEvent } from "react";
 import { announcementCategoryOptions, ru } from "../content/ru";
-import type { PortalAnnouncementCategory } from "../types";
+import type { AnnouncementImageDraft, PortalAnnouncementCategory } from "../types";
 
 type CreateAnnouncementPageProps = {
   draft: {
@@ -8,6 +8,7 @@ type CreateAnnouncementPageProps = {
     category: PortalAnnouncementCategory;
     body: string;
     price: string;
+    images: AnnouncementImageDraft[];
   };
   submitting: boolean;
   onDraftChange: (value: {
@@ -15,7 +16,10 @@ type CreateAnnouncementPageProps = {
     category: PortalAnnouncementCategory;
     body: string;
     price: string;
+    images: AnnouncementImageDraft[];
   }) => void;
+  onFilesSelected: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
+  onRemoveImage: (index: number) => void;
   onBack: () => void;
   onSubmit: (event: FormEvent) => Promise<void>;
 };
@@ -24,6 +28,8 @@ export function CreateAnnouncementPage({
   draft,
   submitting,
   onDraftChange,
+  onFilesSelected,
+  onRemoveImage,
   onBack,
   onSubmit
 }: CreateAnnouncementPageProps) {
@@ -83,6 +89,25 @@ export function CreateAnnouncementPage({
             placeholder={ru.createAnnouncement.pricePlaceholder}
           />
         </label>
+
+        <label className="field-block">
+          <span>{ru.createAnnouncement.imagesLabel}</span>
+          <input accept="image/*" multiple type="file" onChange={(event) => void onFilesSelected(event)} />
+          <small className="subtle-copy">{ru.createAnnouncement.imagesHint}</small>
+        </label>
+
+        {draft.images.length ? (
+          <div className="image-preview-grid">
+            {draft.images.map((image, index) => (
+              <article className="image-preview-card" key={`${image.name}-${index}`}>
+                <img src={image.dataUrl} alt={image.name} />
+                <button className="secondary-action" type="button" onClick={() => onRemoveImage(index)}>
+                  {ru.createAnnouncement.removeImage}
+                </button>
+              </article>
+            ))}
+          </div>
+        ) : null}
 
         <div className="form-actions">
           <button className="secondary-action" type="button" onClick={onBack}>

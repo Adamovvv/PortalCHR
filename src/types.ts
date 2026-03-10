@@ -1,4 +1,4 @@
-export type ThemeMode = "light" | "dark";
+﻿export type ThemeMode = "light" | "dark";
 
 export type PortalProfile = {
   telegramId: number;
@@ -45,6 +45,7 @@ export type PortalAnnouncement = {
   authorTelegramId: number;
   price: number | null;
   status: PortalAnnouncementStatus;
+  imageUrls: string[];
   publishedAt: string;
 };
 
@@ -55,6 +56,15 @@ export type PortalContent = {
   announcements: PortalAnnouncement[];
   myAnnouncements: PortalAnnouncement[];
 };
+
+export type AnnouncementImageDraft = {
+  name: string;
+  type: string;
+  dataUrl: string;
+};
+
+export type AnnouncementSortMode = "newest" | "oldest" | "cheap" | "expensive";
+export type AnnouncementPriceFilter = "all" | "free" | "paid";
 
 export type TelegramUser = {
   id: number;

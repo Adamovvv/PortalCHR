@@ -1,4 +1,5 @@
-import type {
+﻿import type {
+  AnnouncementImageDraft,
   PortalAnnouncement,
   PortalAnnouncementCategory,
   PortalContent,
@@ -64,6 +65,7 @@ export async function createAnnouncement(
     body: string;
     category: PortalAnnouncementCategory;
     price: number | null;
+    images: AnnouncementImageDraft[];
   }
 ): Promise<PortalAnnouncement> {
   return request<PortalAnnouncement>("/api/admin/announcement", {

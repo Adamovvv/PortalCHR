@@ -1,15 +1,24 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+﻿import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { createAnnouncement, deleteAnnouncement, loadContent, syncProfile } from "./lib/api";
 import { getInitData, getInitialTheme, getTelegramUser, setupTelegramChrome } from "./lib/telegram";
-import type { PortalAnnouncementCategory, PortalContent, ThemeMode } from "./types";
+import type {
+  AnnouncementImageDraft,
+  AnnouncementPriceFilter,
+  AnnouncementSortMode,
+  PortalAnnouncement,
+  PortalAnnouncementCategory,
+  PortalContent,
+  ThemeMode
+} from "./types";
 import { ru } from "./content/ru";
 import { StateCard } from "./components/StateCard";
 import { HomePage } from "./pages/HomePage";
 import { AnnouncementsPage } from "./pages/AnnouncementsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { CreateAnnouncementPage } from "./pages/CreateAnnouncementPage";
+import { AnnouncementDetailsPage } from "./pages/AnnouncementDetailsPage";
 
-type ScreenKey = "home" | "announcements" | "profile" | "create-announcement";
+type ScreenKey = "home" | "announcements" | "profile" | "create-announcement" | "announcement-detail";
 
 const emptyContent: PortalContent = {
   profile: null,
@@ -19,30 +28,38 @@ const emptyContent: PortalContent = {
   myAnnouncements: []
 };
 
-const tabs: Array<{ key: Exclude<ScreenKey, "create-announcement">; label: string }> = [
+const tabs: Array<{ key: Exclude<ScreenKey, "create-announcement" | "announcement-detail">; label: string }> = [
   { key: "home", label: ru.nav.home },
   { key: "announcements", label: ru.nav.announcements },
   { key: "profile", label: ru.nav.profile }
 ];
 
+const MAX_IMAGES = 3;
+
 export function App() {
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme());
   const [activeScreen, setActiveScreen] = useState<ScreenKey>("home");
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<PortalAnnouncement | null>(null);
   const [content, setContent] = useState<PortalContent>(emptyContent);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submittingAnnouncement, setSubmittingAnnouncement] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<PortalAnnouncementCategory | "all">("all");
+  const [priceFilter, setPriceFilter] = useState<AnnouncementPriceFilter>("all");
+  const [sortMode, setSortMode] = useState<AnnouncementSortMode>("newest");
   const [announcementDraft, setAnnouncementDraft] = useState<{
     title: string;
     category: PortalAnnouncementCategory;
     body: string;
     price: string;
+    images: AnnouncementImageDraft[];
   }>({
     title: "",
     category: "other",
     body: "",
-    price: ""
+    price: "",
+    images: []
   });
 
   const initData = getInitData();
@@ -56,7 +73,9 @@ export function App() {
         ? ru.announcements.title
         : activeScreen === "profile"
           ? ru.profile.title
-          : ru.createAnnouncement.title;
+          : activeScreen === "create-announcement"
+            ? ru.createAnnouncement.title
+            : selectedAnnouncement?.title || ru.announcements.detailsTitle;
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -103,11 +122,41 @@ export function App() {
   }, [content.news, query]);
 
   const filteredAnnouncements = useMemo(() => {
-    return content.announcements.filter((item) => {
-      const text = `${item.title} ${item.body} ${item.category} ${item.authorName}`.toLowerCase();
-      return text.includes(query.toLowerCase());
-    });
-  }, [content.announcements, query]);
+    const normalizedQuery = query.toLowerCase();
+
+    return [...content.announcements]
+      .filter((item) => {
+        const text = `${item.title} ${item.body} ${item.category} ${item.authorName}`.toLowerCase();
+        return text.includes(normalizedQuery);
+      })
+      .filter((item) => (categoryFilter === "all" ? true : item.category === categoryFilter))
+      .filter((item) => {
+        if (priceFilter === "free") {
+          return item.price === null;
+        }
+
+        if (priceFilter === "paid") {
+          return item.price !== null;
+        }
+
+        return true;
+      })
+      .sort((left, right) => {
+        if (sortMode === "oldest") {
+          return new Date(left.publishedAt).getTime() - new Date(right.publishedAt).getTime();
+        }
+
+        if (sortMode === "cheap") {
+          return (left.price ?? 0) - (right.price ?? 0);
+        }
+
+        if (sortMode === "expensive") {
+          return (right.price ?? 0) - (left.price ?? 0);
+        }
+
+        return new Date(right.publishedAt).getTime() - new Date(left.publishedAt).getTime();
+      });
+  }, [categoryFilter, content.announcements, priceFilter, query, sortMode]);
 
   async function handleAnnouncementSubmit(event: FormEvent) {
     event.preventDefault();
@@ -122,13 +171,14 @@ export function App() {
         title: announcementDraft.title.trim(),
         body: announcementDraft.body.trim(),
         category: announcementDraft.category,
-        price: announcementDraft.price.trim() ? Number(announcementDraft.price) : null
+        price: announcementDraft.price.trim() ? Number(announcementDraft.price) : null,
+        images: announcementDraft.images
       });
       setContent((current) => ({
         ...current,
         myAnnouncements: [created, ...current.myAnnouncements]
       }));
-      setAnnouncementDraft({ title: "", category: "other", body: "", price: "" });
+      setAnnouncementDraft({ title: "", category: "other", body: "", price: "", images: [] });
       setActiveScreen("profile");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
@@ -146,9 +196,62 @@ export function App() {
         myAnnouncements: current.myAnnouncements.filter((item) => item.id !== announcementId),
         announcements: current.announcements.filter((item) => item.id !== announcementId)
       }));
+
+      if (selectedAnnouncement?.id === announcementId) {
+        setSelectedAnnouncement(null);
+        setActiveScreen("announcements");
+      }
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : ru.app.loadFailed);
     }
+  }
+
+  async function handleFilesSelected(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+
+    if (!files.length) {
+      return;
+    }
+
+    if (announcementDraft.images.length + files.length > MAX_IMAGES) {
+      setError(ru.createAnnouncement.fileLimitError);
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      setError(null);
+      const nextImages: AnnouncementImageDraft[] = [];
+
+      for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+          throw new Error(ru.createAnnouncement.fileTypeError);
+        }
+
+        nextImages.push(await prepareImageDraft(file));
+      }
+
+      setAnnouncementDraft((current) => ({
+        ...current,
+        images: [...current.images, ...nextImages]
+      }));
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : ru.createAnnouncement.fileReadError);
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+  function handleRemoveImage(index: number) {
+    setAnnouncementDraft((current) => ({
+      ...current,
+      images: current.images.filter((_, imageIndex) => imageIndex !== index)
+    }));
+  }
+
+  function openAnnouncement(announcement: PortalAnnouncement) {
+    setSelectedAnnouncement(announcement);
+    setActiveScreen("announcement-detail");
   }
 
   return (
@@ -163,7 +266,7 @@ export function App() {
           ) : null}
         </section>
 
-        {activeScreen !== "profile" && activeScreen !== "create-announcement" && content.notice ? (
+        {activeScreen !== "profile" && activeScreen !== "create-announcement" && activeScreen !== "announcement-detail" && content.notice ? (
           <section className="marquee-card" aria-label={content.notice.title}>
             <div className="marquee-track">
               <span>{content.notice.title}: {content.notice.body}</span>
@@ -172,7 +275,7 @@ export function App() {
           </section>
         ) : null}
 
-        {activeScreen !== "profile" && activeScreen !== "create-announcement" ? (
+        {activeScreen !== "profile" && activeScreen !== "create-announcement" && activeScreen !== "announcement-detail" ? (
           <label className="search-field">
             <input
               value={query}
@@ -191,7 +294,18 @@ export function App() {
               <HomePage news={filteredNews} username={displayName || ru.common.telegramUserFallback} />
             ) : null}
 
-            {activeScreen === "announcements" ? <AnnouncementsPage announcements={filteredAnnouncements} /> : null}
+            {activeScreen === "announcements" ? (
+              <AnnouncementsPage
+                announcements={filteredAnnouncements}
+                categoryFilter={categoryFilter}
+                priceFilter={priceFilter}
+                sortMode={sortMode}
+                onCategoryFilterChange={setCategoryFilter}
+                onPriceFilterChange={setPriceFilter}
+                onSortModeChange={setSortMode}
+                onOpenAnnouncement={openAnnouncement}
+              />
+            ) : null}
 
             {activeScreen === "profile" ? (
               <ProfilePage
@@ -206,8 +320,17 @@ export function App() {
                 draft={announcementDraft}
                 submitting={submittingAnnouncement}
                 onDraftChange={setAnnouncementDraft}
+                onFilesSelected={handleFilesSelected}
+                onRemoveImage={handleRemoveImage}
                 onBack={() => setActiveScreen("announcements")}
                 onSubmit={handleAnnouncementSubmit}
+              />
+            ) : null}
+
+            {activeScreen === "announcement-detail" && selectedAnnouncement ? (
+              <AnnouncementDetailsPage
+                announcement={selectedAnnouncement}
+                onBack={() => setActiveScreen("announcements")}
               />
             ) : null}
           </>
@@ -220,7 +343,12 @@ export function App() {
             key={tab.key}
             type="button"
             className={`bottom-nav__item ${activeScreen === tab.key ? "is-active" : ""}`}
-            onClick={() => setActiveScreen(tab.key)}
+            onClick={() => {
+              setActiveScreen(tab.key);
+              if (tab.key !== "announcements") {
+                setSelectedAnnouncement(null);
+              }
+            }}
           >
             <span className="bottom-nav__icon">
               <NavIcon tab={tab.key} active={activeScreen === tab.key} />
@@ -233,7 +361,7 @@ export function App() {
   );
 }
 
-function NavIcon({ tab, active }: { tab: Exclude<ScreenKey, "create-announcement">; active: boolean }) {
+function NavIcon({ tab, active }: { tab: Exclude<ScreenKey, "create-announcement" | "announcement-detail">; active: boolean }) {
   const color = active ? "currentColor" : "currentColor";
 
   if (tab === "home") {
@@ -261,4 +389,48 @@ function NavIcon({ tab, active }: { tab: Exclude<ScreenKey, "create-announcement
       <path d="M5.5 19C6.7 15.9 9.1 14.5 12 14.5C14.9 14.5 17.3 15.9 18.5 19" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
+}
+
+async function prepareImageDraft(file: File): Promise<AnnouncementImageDraft> {
+  const dataUrl = await readFileAsDataUrl(file);
+  const compressed = await compressImage(dataUrl);
+
+  return {
+    name: file.name,
+    type: "image/jpeg",
+    dataUrl: compressed
+  };
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error(ru.createAnnouncement.fileReadError));
+    reader.readAsDataURL(file);
+  });
+}
+
+function compressImage(dataUrl: string) {
+  return new Promise<string>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const maxSide = 1600;
+      const ratio = Math.min(1, maxSide / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(image.width * ratio);
+      canvas.height = Math.round(image.height * ratio);
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        reject(new Error(ru.createAnnouncement.fileReadError));
+        return;
+      }
+
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.84));
+    };
+    image.onerror = () => reject(new Error(ru.createAnnouncement.fileReadError));
+    image.src = dataUrl;
+  });
 }
