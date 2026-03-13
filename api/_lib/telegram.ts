@@ -1,10 +1,11 @@
-import crypto from "node:crypto";
+﻿import crypto from "node:crypto";
 import { getRequiredEnv, getAdminIds } from "./config.js";
 
 type ParsedInitData = {
   authDate: number;
   hash: string;
   queryId?: string;
+  startParam?: string;
   user?: {
     id: number;
     first_name: string;
@@ -49,6 +50,7 @@ export function parseAndVerifyInitData(initData: string): ParsedInitData {
     authDate: Number(params.get("auth_date") ?? 0),
     hash,
     queryId: params.get("query_id") ?? undefined,
+    startParam: params.get("start_param") ?? undefined,
     user: userRaw ? JSON.parse(userRaw) : undefined
   };
 }
@@ -65,4 +67,3 @@ export function requireTelegramUser(initData: string) {
 export function isAdminTelegramId(telegramId: number) {
   return getAdminIds().includes(telegramId);
 }
-

@@ -31,7 +31,7 @@ export function setupTelegramChrome() {
   try {
     webApp?.requestFullscreen?.();
   } catch {
-    // Fullscreen is optional and depends on Telegram client version.
+    // Fullscreen depends on Telegram client support.
   }
 }
 
@@ -54,4 +54,21 @@ export function bindTelegramBackButton(enabled: boolean, onBack: () => void) {
     backButton.offClick?.(onBack);
     backButton.hide?.();
   };
+}
+
+export function openTelegramLink(url: string) {
+  const webApp = getTelegramWebApp();
+  webApp?.openTelegramLink?.(url);
+  webApp?.openLink?.(url);
+  if (!webApp?.openTelegramLink && !webApp?.openLink) {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+}
+
+export function impact(style: "light" | "medium" | "heavy" | "rigid" | "soft" = "light") {
+  getTelegramWebApp()?.HapticFeedback?.impactOccurred?.(style);
+}
+
+export function notify(type: "error" | "success" | "warning") {
+  getTelegramWebApp()?.HapticFeedback?.notificationOccurred?.(type);
 }

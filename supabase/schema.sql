@@ -1,99 +1,67 @@
 ﻿create extension if not exists "pgcrypto";
 
-create table if not exists public.profiles (
+drop table if exists public.question_answers cascade;
+drop table if exists public.questions cascade;
+drop table if exists public.lost_found cascade;
+drop table if exists public.problems cascade;
+drop table if exists public.announcements cascade;
+drop table if exists public.news cascade;
+drop table if exists public.portal_notice cascade;
+
+drop table if exists public.game_results cascade;
+drop table if exists public.task_claims cascade;
+drop table if exists public.tasks cascade;
+drop table if exists public.profiles cascade;
+
+create table public.profiles (
   id uuid primary key default gen_random_uuid(),
   telegram_id bigint unique not null,
   first_name text not null,
   last_name text,
   username text,
   photo_url text,
+  language text not null default 'ru' check (language in ('ru', 'en')),
+  token_balance integer not null default 0,
+  farming_started_at timestamptz,
+  farming_ends_at timestamptz,
+  best_game_score integer not null default 0,
+  total_game_sessions integer not null default 0,
+  referred_by bigint references public.profiles(telegram_id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
-create table if not exists public.portal_notice (
+create table public.tasks (
   id uuid primary key default gen_random_uuid(),
-  title text not null,
-  body text not null,
-  author_telegram_id bigint not null,
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.news (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  summary text not null,
-  category text not null default 'Афиша',
-  author_telegram_id bigint not null,
-  published_at timestamptz not null default now()
-);
-
-create table if not exists public.announcements (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  body text not null,
-  category text not null default 'other',
-  author_name text not null default 'Telegram User',
-  author_username text,
-  price numeric(12,2),
-  image_urls text[] not null default '{}',
-  is_free boolean not null default true,
-  status text not null default 'pending',
-  moderated_by bigint,
-  moderated_at timestamptz,
-  author_telegram_id bigint not null,
-  published_at timestamptz not null default now()
-);
-
-create table if not exists public.problems (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  body text not null,
-  author_name text not null default 'Telegram User',
-  author_username text,
-  author_telegram_id bigint not null,
+  slug text unique not null,
+  title_ru text not null,
+  title_en text not null,
+  description_ru text not null,
+  description_en text not null,
+  reward_tokens integer not null check (reward_tokens > 0),
+  action_url text,
+  icon text not null default 'telegram',
+  sort_order integer not null default 0,
+  is_active boolean not null default true,
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.lost_found (
+create table public.task_claims (
   id uuid primary key default gen_random_uuid(),
-  title text not null,
-  body text not null,
-  author_name text not null default 'Telegram User',
-  author_username text,
-  author_telegram_id bigint not null,
-  created_at timestamptz not null default now()
+  task_id uuid not null references public.tasks(id) on delete cascade,
+  profile_telegram_id bigint not null references public.profiles(telegram_id) on delete cascade,
+  reward_tokens integer not null,
+  created_at timestamptz not null default now(),
+  unique (task_id, profile_telegram_id)
 );
 
-create table if not exists public.questions (
+create table public.game_results (
   id uuid primary key default gen_random_uuid(),
-  title text not null,
-  body text not null,
-  author_name text not null default 'Telegram User',
-  author_username text,
-  author_telegram_id bigint not null,
+  profile_telegram_id bigint not null references public.profiles(telegram_id) on delete cascade,
+  score integer not null,
+  reward_tokens integer not null,
   created_at timestamptz not null default now()
 );
-
-create table if not exists public.question_answers (
-  id uuid primary key default gen_random_uuid(),
-  question_id uuid not null references public.questions(id) on delete cascade,
-  body text not null,
-  author_name text not null default 'Telegram User',
-  author_username text,
-  author_telegram_id bigint not null,
-  created_at timestamptz not null default now()
-);
-
-alter table public.announcements add column if not exists category text not null default 'other';
-alter table public.announcements add column if not exists author_name text not null default 'Telegram User';
-alter table public.announcements add column if not exists author_username text;
-alter table public.announcements add column if not exists price numeric(12,2);
-alter table public.announcements add column if not exists image_urls text[] not null default '{}';
-alter table public.announcements add column if not exists is_free boolean not null default true;
-alter table public.announcements add column if not exists status text not null default 'pending';
-alter table public.announcements add column if not exists moderated_by bigint;
-alter table public.announcements add column if not exists moderated_at timestamptz;
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -112,87 +80,85 @@ for each row
 execute function public.set_updated_at();
 
 alter table public.profiles enable row level security;
-alter table public.portal_notice enable row level security;
-alter table public.news enable row level security;
-alter table public.announcements enable row level security;
-alter table public.problems enable row level security;
-alter table public.lost_found enable row level security;
-alter table public.questions enable row level security;
-alter table public.question_answers enable row level security;
+alter table public.tasks enable row level security;
+alter table public.task_claims enable row level security;
+alter table public.game_results enable row level security;
 
-drop policy if exists "no direct reads profiles" on public.profiles;
-create policy "no direct reads profiles"
-on public.profiles
-for select
-to anon
-using (false);
-
-drop policy if exists "no direct writes profiles" on public.profiles;
-create policy "no direct writes profiles"
+drop policy if exists "no direct profile access" on public.profiles;
+create policy "no direct profile access"
 on public.profiles
 for all
 to anon
 using (false)
 with check (false);
 
-drop policy if exists "no direct reads notice" on public.portal_notice;
-create policy "no direct reads notice"
-on public.portal_notice
-for select
+drop policy if exists "no direct tasks access" on public.tasks;
+create policy "no direct tasks access"
+on public.tasks
+for all
 to anon
-using (false);
+using (false)
+with check (false);
 
-drop policy if exists "no direct reads news" on public.news;
-create policy "no direct reads news"
-on public.news
-for select
+drop policy if exists "no direct task claims access" on public.task_claims;
+create policy "no direct task claims access"
+on public.task_claims
+for all
 to anon
-using (false);
+using (false)
+with check (false);
 
-drop policy if exists "no direct reads announcements" on public.announcements;
-create policy "no direct reads announcements"
-on public.announcements
-for select
+drop policy if exists "no direct game results access" on public.game_results;
+create policy "no direct game results access"
+on public.game_results
+for all
 to anon
-using (false);
+using (false)
+with check (false);
 
-drop policy if exists "no direct reads problems" on public.problems;
-create policy "no direct reads problems"
-on public.problems
-for select
-to anon
-using (false);
-
-drop policy if exists "no direct reads lost_found" on public.lost_found;
-create policy "no direct reads lost_found"
-on public.lost_found
-for select
-to anon
-using (false);
-
-drop policy if exists "no direct reads questions" on public.questions;
-create policy "no direct reads questions"
-on public.questions
-for select
-to anon
-using (false);
-
-drop policy if exists "no direct reads question_answers" on public.question_answers;
-create policy "no direct reads question_answers"
-on public.question_answers
-for select
-to anon
-using (false);
-
-insert into storage.buckets (id, name, public)
-select 'portal-announcements', 'portal-announcements', true
-where not exists (
-  select 1 from storage.buckets where id = 'portal-announcements'
-);
-
-drop policy if exists "public read portal announcement images" on storage.objects;
-create policy "public read portal announcement images"
-on storage.objects
-for select
-to public
-using (bucket_id = 'portal-announcements');
+insert into public.tasks (slug, title_ru, title_en, description_ru, description_en, reward_tokens, action_url, icon, sort_order)
+values
+  (
+    'join-channel',
+    'Подписаться на канал',
+    'Join the channel',
+    'Открой канал проекта в Telegram и подпишись.',
+    'Open the project Telegram channel and subscribe.',
+    150,
+    'https://t.me/moqaz',
+    'telegram',
+    1
+  ),
+  (
+    'open-news',
+    'Открыть новости проекта',
+    'Open project news',
+    'Открой новостной пост проекта и вернись в приложение.',
+    'Open the project news post and come back to the app.',
+    100,
+    'https://t.me/moqaz',
+    'news',
+    2
+  ),
+  (
+    'invite-friend',
+    'Пригласить друга',
+    'Invite a friend',
+    'Поделись своей реферальной ссылкой и приведи нового игрока.',
+    'Share your referral link and bring a new player.',
+    200,
+    null,
+    'friends',
+    3
+  )
+on conflict (slug) do update
+set
+  title_ru = excluded.title_ru,
+  title_en = excluded.title_en,
+  description_ru = excluded.description_ru,
+  description_en = excluded.description_en,
+  reward_tokens = excluded.reward_tokens,
+  action_url = excluded.action_url,
+  icon = excluded.icon,
+  sort_order = excluded.sort_order,
+  is_active = true;

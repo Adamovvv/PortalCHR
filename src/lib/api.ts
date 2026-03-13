@@ -1,14 +1,4 @@
-﻿import type {
-  AnnouncementImageDraft,
-  CommunityItemKind,
-  PortalAnnouncement,
-  PortalAnnouncementCategory,
-  PortalContent,
-  PortalNews,
-  PortalNotice,
-  PortalProfile,
-  PortalQuestionAnswer
-} from "../types";
+﻿import type { AppLanguage, MiniAppData, Profile } from "../types";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -27,83 +17,51 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function syncProfile(initData: string): Promise<PortalProfile> {
-  return request<PortalProfile>("/api/sync-profile", {
+export async function syncProfile(initData: string): Promise<Profile> {
+  return request<Profile>("/api/sync-profile", {
     method: "POST",
     body: JSON.stringify({ initData })
   });
 }
 
-export async function loadContent(initData: string): Promise<PortalContent> {
-  return request<PortalContent>("/api/content", {
+export async function loadAppData(initData: string): Promise<MiniAppData> {
+  return request<MiniAppData>("/api/content", {
     method: "POST",
     body: JSON.stringify({ initData })
   });
 }
 
-export async function updateNotice(initData: string, title: string, body: string): Promise<PortalNotice> {
-  return request<PortalNotice>("/api/admin/notice", {
+export async function startFarming(initData: string) {
+  return request<{ farmingStartedAt: string; farmingEndsAt: string }>("/api/farming/start", {
     method: "POST",
-    body: JSON.stringify({ initData, title, body })
+    body: JSON.stringify({ initData })
   });
 }
 
-export async function createNews(
-  initData: string,
-  title: string,
-  summary: string,
-  category: string
-): Promise<PortalNews> {
-  return request<PortalNews>("/api/admin/news", {
+export async function claimFarming(initData: string) {
+  return request<{ tokenBalance: number; farmingStartedAt: string | null; farmingEndsAt: string | null }>("/api/farming/claim", {
     method: "POST",
-    body: JSON.stringify({ initData, title, summary, category })
+    body: JSON.stringify({ initData })
   });
 }
 
-export async function createAnnouncement(
-  initData: string,
-  payload: {
-    title: string;
-    body: string;
-    category: PortalAnnouncementCategory;
-    price: number | null;
-    images: AnnouncementImageDraft[];
-  }
-): Promise<PortalAnnouncement> {
-  return request<PortalAnnouncement>("/api/admin/announcement", {
+export async function claimTask(initData: string, taskId: string) {
+  return request<{ tokenBalance: number; taskId: string; completedAt: string }>("/api/task/claim", {
     method: "POST",
-    body: JSON.stringify({ initData, ...payload })
+    body: JSON.stringify({ initData, taskId })
   });
 }
 
-export async function createCommunityItem(
-  initData: string,
-  payload: {
-    kind: CommunityItemKind;
-    title: string;
-    body: string;
-  }
-) {
-  return request("/api/community/create", {
+export async function updateLanguage(initData: string, language: AppLanguage) {
+  return request<{ language: AppLanguage }>("/api/profile/language", {
     method: "POST",
-    body: JSON.stringify({ initData, ...payload })
+    body: JSON.stringify({ initData, language })
   });
 }
 
-export async function createQuestionAnswer(
-  initData: string,
-  questionId: string,
-  body: string
-): Promise<PortalQuestionAnswer> {
-  return request<PortalQuestionAnswer>("/api/question/answer", {
+export async function submitGameScore(initData: string, score: number) {
+  return request<{ tokenBalance: number; addedTokens: number; bestScore: number }>("/api/game/submit", {
     method: "POST",
-    body: JSON.stringify({ initData, questionId, body })
-  });
-}
-
-export async function deleteAnnouncement(initData: string, announcementId: string): Promise<{ id: string }> {
-  return request<{ id: string }>("/api/announcement/delete", {
-    method: "POST",
-    body: JSON.stringify({ initData, announcementId })
+    body: JSON.stringify({ initData, score })
   });
 }

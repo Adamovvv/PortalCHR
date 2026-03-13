@@ -1,96 +1,79 @@
 ﻿export type ThemeMode = "light" | "dark";
 
-export type PortalProfile = {
+export type AppLanguage = "ru" | "en";
+
+export type Profile = {
   telegramId: number;
   firstName: string;
   lastName: string | null;
   username: string | null;
   photoUrl: string | null;
-  isAdmin: boolean;
+  language: AppLanguage;
+  tokenBalance: number;
+  farmingStartedAt: string | null;
+  farmingEndsAt: string | null;
+  referredBy: number | null;
 };
 
-export type PortalNotice = {
-  id: string;
-  title: string;
-  body: string;
-  updatedAt: string;
+export type FarmingState = {
+  reward: number;
+  durationHours: number;
+  startedAt: string | null;
+  endsAt: string | null;
+  isActive: boolean;
+  canClaim: boolean;
 };
 
-export type PortalNews = {
-  id: string;
-  title: string;
-  summary: string;
-  category: string;
-  publishedAt: string;
+export type LeaderboardEntry = {
+  rank: number;
+  telegramId: number;
+  firstName: string;
+  username: string | null;
+  photoUrl: string | null;
+  tokenBalance: number;
+  isMe: boolean;
 };
 
-export type PortalAnnouncementCategory =
-  | "transport"
-  | "electronics"
-  | "home"
-  | "services"
-  | "realty"
-  | "jobs"
-  | "other";
-
-export type PortalAnnouncementStatus = "pending" | "approved" | "rejected";
-
-export type PortalAnnouncement = {
-  id: string;
-  title: string;
-  body: string;
-  category: PortalAnnouncementCategory;
-  authorName: string;
-  authorUsername: string | null;
-  authorTelegramId: number;
-  price: number | null;
-  status: PortalAnnouncementStatus;
-  imageUrls: string[];
-  publishedAt: string;
+export type MyLeaderboardEntry = {
+  rank: number;
+  tokenBalance: number;
 };
 
-export type CommunityItemKind = "problem" | "lost_found" | "question";
-
-export type PortalCommunityItem = {
+export type TaskItem = {
   id: string;
+  slug: string;
   title: string;
-  body: string;
-  authorName: string;
-  authorUsername: string | null;
-  authorTelegramId: number;
+  description: string;
+  rewardTokens: number;
+  actionUrl: string | null;
+  icon: string;
+  completed: boolean;
+  completedAt: string | null;
+};
+
+export type Referral = {
+  telegramId: number;
+  firstName: string;
+  username: string | null;
+  photoUrl: string | null;
   createdAt: string;
 };
 
-export type PortalQuestionAnswer = {
-  id: string;
-  questionId: string;
-  body: string;
-  authorName: string;
-  authorUsername: string | null;
-  authorTelegramId: number;
-  createdAt: string;
+export type ReferralSummary = {
+  link: string;
+  invitedCount: number;
+  totalReferralTokens: number;
+  invited: Referral[];
 };
 
-export type PortalContent = {
-  profile: PortalProfile | null;
-  notice: PortalNotice | null;
-  news: PortalNews[];
-  announcements: PortalAnnouncement[];
-  myAnnouncements: PortalAnnouncement[];
-  problems: PortalCommunityItem[];
-  lostFound: PortalCommunityItem[];
-  questions: PortalCommunityItem[];
-  questionAnswers: PortalQuestionAnswer[];
+export type MiniAppData = {
+  profile: Profile;
+  farming: FarmingState;
+  tasks: TaskItem[];
+  leaderboard: LeaderboardEntry[];
+  myLeaderboardEntry: MyLeaderboardEntry | null;
+  referrals: ReferralSummary;
 };
-
-export type AnnouncementImageDraft = {
-  name: string;
-  type: string;
-  dataUrl: string;
-};
-
-export type AnnouncementSortMode = "newest" | "oldest" | "cheap" | "expensive";
-export type AnnouncementPriceFilter = "all" | "free" | "paid";
 
 export type TelegramUser = {
   id: number;
@@ -110,6 +93,7 @@ export type TelegramBackButton = {
 export type TelegramWebApp = {
   initData: string;
   initDataUnsafe: {
+    start_param?: string;
     user?: TelegramUser;
   };
   colorScheme?: ThemeMode;
@@ -118,6 +102,12 @@ export type TelegramWebApp = {
   ready?: () => void;
   requestFullscreen?: () => void;
   disableVerticalSwipes?: () => void;
+  openTelegramLink?: (url: string) => void;
+  openLink?: (url: string) => void;
+  HapticFeedback?: {
+    impactOccurred?: (style: "light" | "medium" | "heavy" | "rigid" | "soft") => void;
+    notificationOccurred?: (type: "error" | "success" | "warning") => void;
+  };
 };
 
 declare global {

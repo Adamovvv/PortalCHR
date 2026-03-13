@@ -1,34 +1,15 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 import logging
 import os
-from dataclasses import dataclass
-from datetime import datetime, timezone
 
-from supabase import Client, create_client
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, WebAppInfo
-from telegram.ext import (
-    Application,
-    CallbackQueryHandler,
-    CommandHandler,
-    ContextTypes,
-    MessageHandler,
-    filters,
-)
+from telegram.ext import Application, CommandHandler, ContextTypes
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
     level=logging.INFO,
 )
-logger = logging.getLogger("portal_bot")
-
-
-@dataclass
-class AdminDraft:
-    mode: str
-    step: str
-    title: str | None = None
-    category: str | None = None
-    body: str | None = None
+logger = logging.getLogger("token_farm_bot")
 
 
 def required(name: str) -> str:
@@ -38,181 +19,24 @@ def required(name: str) -> str:
     return value
 
 
-def get_admin_ids() -> set[int]:
-    result: set[int] = set()
-    for item in os.getenv("TELEGRAM_ADMIN_IDS", "").split(","):
-        item = item.strip()
-        if item.isdigit():
-            result.add(int(item))
-    return result
-
-
-def is_admin(user_id: int | None) -> bool:
-    return bool(user_id and user_id in get_admin_ids())
-
-
 def get_mini_app_url(path: str = "/") -> str:
     return f"{required('VITE_APP_URL').rstrip('/')}{path}"
 
 
-def get_supabase() -> Client:
-    return create_client(required("SUPABASE_URL"), required("SUPABASE_SERVICE_ROLE_KEY"))
-
-
-def get_keyboard(admin: bool) -> InlineKeyboardMarkup:
-    rows = [[InlineKeyboardButton("Открыть портал", web_app=WebAppInfo(url=get_mini_app_url("/")))]]
-    if admin:
-        rows.append(
-            [
-                InlineKeyboardButton("Новое сообщение", callback_data="admin:notice"),
-                InlineKeyboardButton("Новая новость", callback_data="admin:news"),
-            ]
-        )
-    return InlineKeyboardMarkup(rows)
+def get_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton("Open Mini App", web_app=WebAppInfo(url=get_mini_app_url("/")))]]
+    )
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_id = update.effective_user.id if update.effective_user else None
-    await update.effective_message.reply_text(
-        "Портал Республики готов. Открой мини-апп кнопкой ниже.",
-        reply_markup=get_keyboard(is_admin(user_id)),
-    )
-
-
-async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_id = update.effective_user.id if update.effective_user else None
-    if not is_admin(user_id):
-        await update.effective_message.reply_text("Команда доступна только администраторам.")
+    if not update.effective_message:
         return
 
     await update.effective_message.reply_text(
-        "Панель администратора. Можно открыть мини-апп или быстро опубликовать контент прямо из чата.",
-        reply_markup=get_keyboard(True),
+        "Token Farm Mini App is ready. Open the app and start farming.",
+        reply_markup=get_keyboard(),
     )
-
-
-async def admin_action(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    query = update.callback_query
-    if query is None:
-        return
-
-    user_id = query.from_user.id if query.from_user else None
-    if not is_admin(user_id):
-        await query.answer("Нет доступа", show_alert=True)
-        return
-
-    mode = (query.data or "").split(":", 1)[1]
-    context.user_data["admin_draft"] = AdminDraft(mode=mode, step="title")
-    prompts = {
-        "notice": "Введи заголовок для информационного сообщения.",
-        "news": "Введи заголовок новости.",
-    }
-    await query.answer()
-    await query.message.reply_text(prompts[mode])
-
-
-async def moderate_announcement(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    query = update.callback_query
-    if query is None:
-        return
-
-    user_id = query.from_user.id if query.from_user else None
-    if not is_admin(user_id):
-        await query.answer("Нет доступа", show_alert=True)
-        return
-
-    _, action, announcement_id = (query.data or "").split(":", 2)
-    supabase = get_supabase()
-    response = (
-        supabase.table("announcements")
-        .select("id,title,author_telegram_id,status")
-        .eq("id", announcement_id)
-        .single()
-        .execute()
-    )
-    announcement = response.data
-    if not announcement:
-        await query.answer("Объявление не найдено", show_alert=True)
-        return
-
-    new_status = "approved" if action == "approve" else "rejected"
-    update_response = (
-        supabase.table("announcements")
-        .update({"status": new_status, "moderated_by": user_id, "moderated_at": datetime.now(timezone.utc).isoformat()})
-        .eq("id", announcement_id)
-        .execute()
-    )
-    if update_response.data is None:
-        await query.answer("Не удалось обновить статус", show_alert=True)
-        return
-
-    author_id = announcement.get("author_telegram_id")
-    status_text = "опубликовано" if new_status == "approved" else "отклонено"
-    await context.bot.send_message(
-        chat_id=author_id,
-        text=f"Твое объявление \"{announcement.get('title')}\" {status_text}."
-    )
-    await query.answer("Готово")
-    await query.edit_message_reply_markup(reply_markup=None)
-
-
-async def admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user = update.effective_user
-    if user is None or not is_admin(user.id):
-        return
-
-    draft: AdminDraft | None = context.user_data.get("admin_draft")
-    if draft is None:
-        return
-
-    text = (update.effective_message.text or "").strip()
-    if not text:
-        return
-
-    if draft.step == "title":
-        draft.title = text
-        if draft.mode == "news":
-            draft.step = "category"
-            await update.effective_message.reply_text("Теперь введи категорию новости.")
-            return
-        draft.step = "body"
-        await update.effective_message.reply_text("Теперь введи основной текст.")
-        return
-
-    if draft.step == "category":
-        draft.category = text
-        draft.step = "body"
-        await update.effective_message.reply_text("Теперь введи краткое описание новости.")
-        return
-
-    draft.body = text
-    supabase = get_supabase()
-
-    if draft.mode == "notice":
-        response = supabase.table("portal_notice").insert(
-            {
-                "title": draft.title,
-                "body": draft.body,
-                "author_telegram_id": user.id,
-            }
-        ).execute()
-        if not response.data:
-            raise RuntimeError("Не удалось сохранить сообщение.")
-        await update.effective_message.reply_text("Информационное сообщение обновлено.")
-    else:
-        response = supabase.table("news").insert(
-            {
-                "title": draft.title,
-                "category": draft.category or "Новости",
-                "summary": draft.body,
-                "author_telegram_id": user.id,
-            }
-        ).execute()
-        if not response.data:
-            raise RuntimeError("Не удалось создать новость.")
-        await update.effective_message.reply_text("Новость опубликована.")
-
-    context.user_data.pop("admin_draft", None)
 
 
 async def post_init(application: Application) -> None:
@@ -223,10 +47,6 @@ async def post_init(application: Application) -> None:
 def build_application() -> Application:
     application = Application.builder().token(required("TELEGRAM_BOT_TOKEN")).post_init(post_init).build()
     application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(CommandHandler("admin", admin_command))
-    application.add_handler(CallbackQueryHandler(moderate_announcement, pattern=r"^moderate:"))
-    application.add_handler(CallbackQueryHandler(admin_action, pattern=r"^admin:"))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, admin_text))
     return application
 
 
