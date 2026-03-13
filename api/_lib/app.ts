@@ -26,6 +26,13 @@ export function mapProfile(row: any) {
 }
 
 export function getReferralLink(telegramId: number) {
+  const botUsername = process.env.TELEGRAM_BOT_USERNAME?.replace(/^@/, "").trim();
+  const shortName = process.env.TELEGRAM_MINI_APP_SHORT_NAME?.trim();
+
+  if (botUsername && shortName) {
+    return `https://t.me/${botUsername}/${shortName}?startapp=ref_${telegramId}`;
+  }
+
   const appUrl = getRequiredEnv("VITE_APP_URL").replace(/\/+$/, "");
   return `${appUrl}?startapp=ref_${telegramId}`;
 }

@@ -42,6 +42,7 @@ type Dictionary = {
   farmingEndsIn: string;
   seconds: string;
   errorLoad: string;
+  collectedTokens: string;
 };
 
 const text: Record<AppLanguage, Dictionary> = {
@@ -80,7 +81,8 @@ const text: Record<AppLanguage, Dictionary> = {
     invitedCount: "Друзей",
     farmingEndsIn: "До завершения",
     seconds: "сек",
-    errorLoad: "Не удалось загрузить данные"
+    errorLoad: "Не удалось загрузить данные",
+    collectedTokens: "Собрано"
   },
   en: {
     nav: { home: "Home", rating: "Rating", tasks: "Tasks", friends: "Friends" },
@@ -117,7 +119,8 @@ const text: Record<AppLanguage, Dictionary> = {
     invitedCount: "Friends",
     farmingEndsIn: "Time left",
     seconds: "sec",
-    errorLoad: "Failed to load data"
+    errorLoad: "Failed to load data",
+    collectedTokens: "Collected"
   }
 };
 
@@ -187,12 +190,10 @@ export function App() {
     void bootstrap();
   }, [initData]);
 
-  useEffect(() => {
-    return bindTelegramBackButton(screen === "game", () => {
-      finishGame(false);
-      setScreen("home");
-    });
-  }, [screen]);
+  useEffect(() => bindTelegramBackButton(screen === "game", () => {
+    finishGame(false);
+    setScreen("home");
+  }), [screen]);
 
   useEffect(() => {
     if (screen !== "game") {
@@ -390,12 +391,7 @@ export function App() {
       const nextScore = Math.max(0, gameScoreRef.current + delta);
       gameScoreRef.current = nextScore;
       setGameScore(nextScore);
-
-      if (delta < 0) {
-        notify("warning");
-      } else {
-        impact("light");
-      }
+      delta < 0 ? notify("warning") : impact("light");
 
       const hitIds = new Set(hits.map((item) => item.id));
       return current.filter((item) => !hitIds.has(item.id));
@@ -414,17 +410,16 @@ export function App() {
     void (async () => {
       try {
         const response = await submitGameScore(initData, scoreToSubmit);
-        setAppData((current) => {
-          if (!current) return current;
-          return {
-            ...current,
-            profile: { ...current.profile, tokenBalance: response.tokenBalance }
-          };
-        });
+        setAppData((current) => current ? {
+          ...current,
+          profile: { ...current.profile, tokenBalance: response.tokenBalance }
+        } : current);
         setGameResultText(`${t.gameFinished}: +${response.addedTokens}`);
+        setScreen("home");
         notify("success");
       } catch {
         setGameResultText(t.gameSubmitError);
+        setScreen("home");
         notify("error");
       }
     })();
@@ -443,10 +438,54 @@ export function App() {
   }
 
   const farmStatus = deriveFarmStatus(appData.farming.endsAt, now, t);
+  const farmButtonLabel = farmCanClaim
+    ? `${t.farmClaim} +${appData.farming.reward}`
+    : farmIsActive
+      ? `${t.farmActive} ${farmStatus}`
+      : `${t.farmStart} +${appData.farming.reward}`;
+
+  if (screen === "game") {
+    return (
+      <div className="game-shell">
+        <div className="game-frame">
+          <div className="game-topbar">
+            <div className="game-stat">
+              <span>{t.collectedTokens}</span>
+              <strong>{gameScore}</strong>
+            </div>
+            <div className="game-stat">
+              <span>{t.farmingEndsIn}</span>
+              <strong>{Math.ceil(gameTimeLeft / 1000)} {t.seconds}</strong>
+            </div>
+          </div>
+          <div className="game-copy game-copy--standalone">
+            <h2>{t.gameTitle}</h2>
+            <p>{t.gameHint}</p>
+          </div>
+          <div
+            ref={arenaRef}
+            className="game-arena"
+            onPointerMove={(event) => collectAt(event.clientX, event.clientY)}
+            onPointerDown={(event) => collectAt(event.clientX, event.clientY)}
+          >
+            {gameItems.map((item) => (
+              <div
+                key={item.id}
+                className={`spawn-item spawn-item--${item.type}`}
+                style={{ left: `${item.x}%`, top: `${item.y}%` }}
+              >
+                {item.type === "token" ? "✦" : "✕"}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-shell">
-      <div className="app-frame">
+      <div className="app-frame app-frame--with-cta">
         <header className="topbar">
           <button type="button" className="chip chip--ghost" onClick={handleLanguageToggle} disabled={busyKey === "language"}>
             {language.toUpperCase()}
@@ -482,31 +521,12 @@ export function App() {
                   <strong>{appData.referrals.invitedCount}</strong>
                 </div>
               </div>
-              <button
-                type="button"
-                className="primary-button"
-                onClick={handleFarmAction}
-                disabled={busyKey === "farm" || farmIsActive}
-              >
-                {farmCanClaim
-                  ? `${t.farmClaim} +${appData.farming.reward}`
-                  : farmIsActive
-                    ? `${t.farmActive} ${farmStatus}`
-                    : `${t.farmStart} +${appData.farming.reward}`}
-              </button>
             </div>
 
-            <div className="quick-grid">
-              <button type="button" className="panel-card panel-card--play" onClick={() => setScreen("game")}>
-                <span className="panel-card__label">{t.play}</span>
-                <strong>30 {t.seconds}</strong>
-              </button>
-              <div className="panel-card">
-                <span className="panel-card__label">{t.profile}</span>
-                <strong>{appData.profile.firstName}</strong>
-                <small>@{appData.profile.username ?? "player"}</small>
-              </div>
-            </div>
+            <button type="button" className="panel-card panel-card--play panel-card--full" onClick={() => setScreen("game")}>
+              <span className="panel-card__label">{t.play}</span>
+              <strong>30 {t.seconds}</strong>
+            </button>
 
             <div className="info-strip">
               <div>
@@ -624,77 +644,36 @@ export function App() {
           </section>
         ) : null}
 
-        {screen === "game" ? (
-          <section className="game-screen">
-            <div className="game-header">
-              <div>
-                <span>{t.totalTokens}</span>
-                <strong>{formatNumber(appData.profile.tokenBalance)}</strong>
-              </div>
-              <div>
-                <span>Score</span>
-                <strong>{gameScore}</strong>
-              </div>
-              <div>
-                <span>{t.seconds}</span>
-                <strong>{Math.ceil(gameTimeLeft / 1000)}</strong>
-              </div>
-            </div>
-            <div className="game-copy">
-              <h2>{t.gameTitle}</h2>
-              <p>{t.gameHint}</p>
-            </div>
-            <div
-              ref={arenaRef}
-              className="game-arena"
-              onPointerMove={(event) => collectAt(event.clientX, event.clientY)}
-              onPointerDown={(event) => collectAt(event.clientX, event.clientY)}
-            >
-              {gameItems.map((item) => (
-                <div
-                  key={item.id}
-                  className={`spawn-item spawn-item--${item.type}`}
-                  style={{ left: `${item.x}%`, top: `${item.y}%` }}
-                >
-                  {item.type === "token" ? "✦" : "✕"}
-                </div>
-              ))}
-            </div>
-            <div className="game-footer">
-              <span>{t.gameReward}: +{gameScore}</span>
-              <span>{t.bombPenalty}</span>
-            </div>
-          </section>
-        ) : null}
-
-        {gameResultText && screen !== "game" ? <div className="toast">{gameResultText}</div> : null}
+        {gameResultText ? <div className="toast">{gameResultText}</div> : null}
       </div>
 
-      {screen !== "game" ? (
-        <nav className="bottom-nav">
-          {(["rating", "tasks", "home", "friends"] as Array<Exclude<Screen, "game">>).map((item) => (
-            <button key={item} type="button" className={`bottom-nav__item ${screen === item ? "is-active" : ""}`} onClick={() => setScreen(item)}>
-              <span className="bottom-nav__icon">{navIcon(item)}</span>
-              <span>{t.nav[item]}</span>
-            </button>
-          ))}
-        </nav>
-      ) : null}
+      <div className="floating-cta">
+        <button
+          type="button"
+          className="floating-cta__button"
+          onClick={handleFarmAction}
+          disabled={busyKey === "farm" || farmIsActive}
+        >
+          {farmButtonLabel}
+        </button>
+      </div>
+
+      <nav className="bottom-nav">
+        {(["rating", "tasks", "home", "friends"] as Array<Exclude<Screen, "game">>).map((item) => (
+          <button key={item} type="button" className={`bottom-nav__item ${screen === item ? "is-active" : ""}`} onClick={() => setScreen(item)}>
+            <span className="bottom-nav__icon">{navIcon(item)}</span>
+            <span>{t.nav[item]}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
 
 function deriveFarmStatus(endsAt: string | null, now: number, t: Dictionary) {
-  if (!endsAt) {
-    return "06:00:00";
-  }
-
+  if (!endsAt) return "06:00:00";
   const diff = new Date(endsAt).getTime() - now;
-  if (diff <= 0) {
-    return t.farmReady;
-  }
-
-  return formatDuration(diff);
+  return diff <= 0 ? t.farmReady : formatDuration(diff);
 }
 
 function formatDuration(milliseconds: number) {
