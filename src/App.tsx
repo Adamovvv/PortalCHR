@@ -127,6 +127,7 @@ const text: Record<AppLanguage, Dictionary> = {
 const GAME_DURATION_MS = 30_000;
 const ITEM_LIFETIME_MS = 1_000;
 const SPAWN_INTERVAL_MS = 450;
+const REFERRAL_LINK = "https://t.me/portalchr_bot";
 
 export function App() {
   const initData = getInitData();
@@ -360,9 +361,8 @@ export function App() {
   }
 
   async function handleCopyReferral() {
-    if (!appData) return;
     try {
-      await navigator.clipboard.writeText(appData.referrals.link);
+      await navigator.clipboard.writeText(REFERRAL_LINK);
       setGameResultText(t.copied);
       impact("light");
       window.setTimeout(() => setGameResultText(null), 1600);
@@ -448,7 +448,7 @@ export function App() {
     return (
       <div className="game-shell">
         <div className="game-frame">
-          <div className="game-topbar">
+          <div className="game-topbar game-topbar--fullwidth">
             <div className="game-stat">
               <span>{t.collectedTokens}</span>
               <strong>{gameScore}</strong>
@@ -457,10 +457,6 @@ export function App() {
               <span>{t.farmingEndsIn}</span>
               <strong>{Math.ceil(gameTimeLeft / 1000)} {t.seconds}</strong>
             </div>
-          </div>
-          <div className="game-copy game-copy--standalone">
-            <h2>{t.gameTitle}</h2>
-            <p>{t.gameHint}</p>
           </div>
           <div
             ref={arenaRef}
@@ -485,7 +481,7 @@ export function App() {
 
   return (
     <div className="app-shell">
-      <div className="app-frame app-frame--with-cta">
+      <div className="app-frame">
         <header className="topbar">
           <button type="button" className="chip chip--ghost" onClick={handleLanguageToggle} disabled={busyKey === "language"}>
             {language.toUpperCase()}
@@ -522,6 +518,15 @@ export function App() {
                 </div>
               </div>
             </div>
+
+            <button
+              type="button"
+              className="floating-cta__button floating-cta__button--inline"
+              onClick={handleFarmAction}
+              disabled={busyKey === "farm" || farmIsActive}
+            >
+              {farmButtonLabel}
+            </button>
 
             <button type="button" className="panel-card panel-card--play panel-card--full" onClick={() => setScreen("game")}>
               <span className="panel-card__label">{t.play}</span>
@@ -610,7 +615,7 @@ export function App() {
               <h2>{t.yourFriends}</h2>
             </div>
             <div className="referral-card">
-              <span>{appData.referrals.link}</span>
+              <span>{REFERRAL_LINK}</span>
               <button type="button" className="primary-button" onClick={handleCopyReferral}>
                 {t.copyLink}
               </button>
@@ -645,17 +650,6 @@ export function App() {
         ) : null}
 
         {gameResultText ? <div className="toast">{gameResultText}</div> : null}
-      </div>
-
-      <div className="floating-cta">
-        <button
-          type="button"
-          className="floating-cta__button"
-          onClick={handleFarmAction}
-          disabled={busyKey === "farm" || farmIsActive}
-        >
-          {farmButtonLabel}
-        </button>
       </div>
 
       <nav className="bottom-nav">

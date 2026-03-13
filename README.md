@@ -223,7 +223,11 @@ journalctl -u portal-bot -f
 ## 8. Как обновлять бота на VPS
 
 ```bash
+ssh root@83.166.246.254
+lfGYsqWXU3fsTKwP
+
 cd ~/PortalCHR
+nano /root/portal-bot/bot/main.py
 git pull
 source .venv/bin/activate
 pip install -r bot/requirements.txt
