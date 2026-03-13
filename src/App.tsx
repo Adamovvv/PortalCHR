@@ -127,7 +127,7 @@ const text: Record<AppLanguage, Dictionary> = {
 const GAME_DURATION_MS = 30_000;
 const ITEM_LIFETIME_MS = 1_000;
 const SPAWN_INTERVAL_MS = 450;
-const REFERRAL_LINK = "https://t.me/portalchr_bot";
+const BOT_USERNAME = "portalchr_bot";
 
 export function App() {
   const initData = getInitData();
@@ -152,6 +152,7 @@ export function App() {
   const farmDiff = appData?.farming.endsAt ? new Date(appData.farming.endsAt).getTime() - now : null;
   const farmCanClaim = Boolean(appData?.farming.endsAt && (farmDiff ?? 0) <= 0);
   const farmIsActive = Boolean(appData?.farming.endsAt && (farmDiff ?? 0) > 0);
+  const referralLink = buildBotReferralLink(appData?.referrals.link ?? "", BOT_USERNAME);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -362,7 +363,7 @@ export function App() {
 
   async function handleCopyReferral() {
     try {
-      await navigator.clipboard.writeText(REFERRAL_LINK);
+      await navigator.clipboard.writeText(referralLink);
       setGameResultText(t.copied);
       impact("light");
       window.setTimeout(() => setGameResultText(null), 1600);
@@ -615,7 +616,7 @@ export function App() {
               <h2>{t.yourFriends}</h2>
             </div>
             <div className="referral-card">
-              <span>{REFERRAL_LINK}</span>
+              <span>{referralLink}</span>
               <button type="button" className="primary-button" onClick={handleCopyReferral}>
                 {t.copyLink}
               </button>
@@ -701,4 +702,35 @@ function navIcon(screen: Exclude<Screen, "game">) {
   if (screen === "tasks") return "☑";
   if (screen === "friends") return "◯";
   return "⌘";
+}
+
+function buildBotReferralLink(sourceLink: string, botUsername: string) {
+  const fallback = `https://t.me/${botUsername}`;
+  if (!sourceLink) return fallback;
+
+  try {
+    const url = new URL(sourceLink);
+    const startApp = url.searchParams.get("startapp") ?? url.searchParams.get("start");
+
+    if (startApp) {
+      return `${fallback}?startapp=${encodeURIComponent(startApp)}`;
+    }
+
+    const path = url.pathname.replace(/^\/+/, "");
+    if (path) {
+      return `${fallback}/${path}${url.search}`;
+    }
+
+    return fallback;
+  } catch {
+    if (/^https?:\/\/t\.me\//i.test(sourceLink)) {
+      return sourceLink;
+    }
+
+    if (/^[a-z0-9_-]+$/i.test(sourceLink)) {
+      return `${fallback}?startapp=${encodeURIComponent(sourceLink)}`;
+    }
+
+    return fallback;
+  }
 }

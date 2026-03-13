@@ -21,14 +21,24 @@
 html,
 body,
 #root {
+  height: 100%;
   min-height: 100%;
   margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
-  background: var(--bg-glow);
-  background-attachment: fixed;
+  position: relative;
   color: var(--text);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--bg-glow);
+  z-index: -2;
 }
 
 button,
@@ -47,11 +57,22 @@ img {
 }
 
 .app-shell {
-  min-height: 100vh;
+  position: relative;
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
   padding: 18px 14px 116px;
+}
+
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
   background-image: radial-gradient(rgba(200, 255, 26, 0.12) 1px, transparent 1px);
   background-size: 16px 16px;
-  background-attachment: fixed;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .app-frame,
