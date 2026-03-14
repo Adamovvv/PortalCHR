@@ -23,7 +23,7 @@
   --tg-content-safe-left: var(--tg-content-safe-area-inset-left, var(--tg-safe-left));
   --tg-content-safe-right: var(--tg-content-safe-area-inset-right, var(--tg-safe-right));
 
-  --tg-top-offset: 12px;
+  --tg-top-offset: 16px;
 }
 
 * {
