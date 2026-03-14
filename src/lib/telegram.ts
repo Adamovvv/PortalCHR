@@ -32,10 +32,32 @@ function applyInsetGroup(prefix: "safe-area" | "content-safe-area", inset?: Tele
   setInsetVar(`--tg-${prefix}-inset-right`, inset?.right);
 }
 
+function applyFullscreenOffsets(webApp: TelegramWebApp | null) {
+  const safeTop = webApp?.safeAreaInset?.top ?? 0;
+  const contentTop = webApp?.contentSafeAreaInset?.top ?? 0;
+  const topInset = Math.max(safeTop, contentTop);
+
+  const isNotchedIosLikeTop = safeTop >= 40;
+  const appTopOffset = contentTop > safeTop
+    ? contentTop + 8
+    : isNotchedIosLikeTop
+      ? safeTop + 44
+      : topInset + 8;
+  const gameTopOffset = contentTop > safeTop
+    ? contentTop + 10
+    : isNotchedIosLikeTop
+      ? safeTop + 46
+      : topInset + 10;
+
+  setInsetVar("--app-top-offset", appTopOffset);
+  setInsetVar("--game-top-offset", gameTopOffset);
+}
+
 export function syncTelegramInsets() {
   const webApp = getTelegramWebApp();
   applyInsetGroup("safe-area", webApp?.safeAreaInset);
   applyInsetGroup("content-safe-area", webApp?.contentSafeAreaInset);
+  applyFullscreenOffsets(webApp);
 }
 
 export function setupTelegramChrome() {
@@ -55,6 +77,7 @@ export function setupTelegramChrome() {
   syncTelegramInsets();
   window.setTimeout(syncTelegramInsets, 50);
   window.setTimeout(syncTelegramInsets, 250);
+  window.setTimeout(syncTelegramInsets, 600);
 
   const handleInsetsChanged = () => syncTelegramInsets();
   webApp?.onEvent?.("safeAreaChanged", handleInsetsChanged);
@@ -99,4 +122,3 @@ export function impact(style: "light" | "medium" | "heavy" | "rigid" | "soft" = 
 export function notify(type: "error" | "success" | "warning") {
   getTelegramWebApp()?.HapticFeedback?.notificationOccurred?.(type);
 }
-
