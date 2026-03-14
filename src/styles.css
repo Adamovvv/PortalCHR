@@ -70,7 +70,7 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
-  padding-top: calc(var(--tg-content-top) + 18px);
+  padding-top: calc(max(var(--tg-safe-top), var(--tg-content-top)) + 18px);
   padding-right: calc(max(var(--tg-safe-right), var(--tg-content-right)) + 14px);
   padding-bottom: calc(max(var(--tg-content-bottom), var(--tg-safe-bottom)) + 116px);
   padding-left: calc(max(var(--tg-safe-left), var(--tg-content-left)) + 14px);
