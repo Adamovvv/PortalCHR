@@ -1,4 +1,4 @@
-﻿import type { TelegramUser, TelegramWebApp, ThemeMode } from "../types";
+﻿import type { TelegramInset, TelegramUser, TelegramWebApp, ThemeMode } from "../types";
 
 export function getTelegramWebApp(): TelegramWebApp | null {
   return window.Telegram?.WebApp ?? null;
@@ -21,9 +21,27 @@ export function getInitialTheme(): ThemeMode {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+function setInsetVar(name: string, value?: number) {
+  document.documentElement.style.setProperty(name, `${value ?? 0}px`);
+}
+
+function applyInsetGroup(prefix: "safe-area" | "content-safe-area", inset?: TelegramInset) {
+  setInsetVar(`--tg-${prefix}-inset-top`, inset?.top);
+  setInsetVar(`--tg-${prefix}-inset-bottom`, inset?.bottom);
+  setInsetVar(`--tg-${prefix}-inset-left`, inset?.left);
+  setInsetVar(`--tg-${prefix}-inset-right`, inset?.right);
+}
+
+export function syncTelegramInsets() {
+  const webApp = getTelegramWebApp();
+  applyInsetGroup("safe-area", webApp?.safeAreaInset);
+  applyInsetGroup("content-safe-area", webApp?.contentSafeAreaInset);
+}
+
 export function setupTelegramChrome() {
   const webApp = getTelegramWebApp();
 
+  syncTelegramInsets();
   webApp?.ready?.();
   webApp?.expand?.();
   webApp?.disableVerticalSwipes?.();
@@ -33,6 +51,15 @@ export function setupTelegramChrome() {
   } catch {
     // Fullscreen depends on Telegram client support.
   }
+
+  syncTelegramInsets();
+  window.setTimeout(syncTelegramInsets, 50);
+  window.setTimeout(syncTelegramInsets, 250);
+
+  const handleInsetsChanged = () => syncTelegramInsets();
+  webApp?.onEvent?.("safeAreaChanged", handleInsetsChanged);
+  webApp?.onEvent?.("contentSafeAreaChanged", handleInsetsChanged);
+  webApp?.onEvent?.("viewportChanged", handleInsetsChanged);
 }
 
 export function bindTelegramBackButton(enabled: boolean, onBack: () => void) {

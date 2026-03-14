@@ -90,6 +90,13 @@ export type TelegramBackButton = {
   offClick?: (callback: () => void) => void;
 };
 
+export type TelegramInset = {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+};
+
 export type TelegramWebApp = {
   initData: string;
   initDataUnsafe: {
@@ -97,6 +104,8 @@ export type TelegramWebApp = {
     user?: TelegramUser;
   };
   colorScheme?: ThemeMode;
+  safeAreaInset?: TelegramInset;
+  contentSafeAreaInset?: TelegramInset;
   BackButton?: TelegramBackButton;
   expand?: () => void;
   ready?: () => void;
@@ -104,6 +113,8 @@ export type TelegramWebApp = {
   disableVerticalSwipes?: () => void;
   openTelegramLink?: (url: string) => void;
   openLink?: (url: string) => void;
+  onEvent?: (eventType: string, callback: () => void) => void;
+  offEvent?: (eventType: string, callback: () => void) => void;
   HapticFeedback?: {
     impactOccurred?: (style: "light" | "medium" | "heavy" | "rigid" | "soft") => void;
     notificationOccurred?: (type: "error" | "success" | "warning") => void;
