@@ -19,6 +19,8 @@
   --tg-content-bottom: var(--tg-content-safe-area-inset-bottom, 0px);
   --tg-content-left: var(--tg-content-safe-area-inset-left, 0px);
   --tg-content-right: var(--tg-content-safe-area-inset-right, 0px);
+  --app-top-offset: 12px;
+  --game-top-offset: 12px;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
@@ -123,7 +125,9 @@ img {
 .game-topbar,
 .error-banner,
 .toast,
-.game-stat {
+.game-stat,
+.game-result-card,
+.game-result-stat {
   border: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(21, 24, 18, 0.95), rgba(10, 12, 10, 0.96));
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02) inset, 0 18px 50px rgba(0, 0, 0, 0.35);
@@ -185,7 +189,9 @@ img {
 .friend-card strong,
 .hero-card h1,
 .game-stat strong,
-.my-rank-card strong {
+.my-rank-card strong,
+.game-result-card h2,
+.game-result-stat strong {
   display: block;
 }
 
@@ -201,7 +207,9 @@ img {
 .friend-card__date,
 .error-banner,
 .toast,
-.game-stat span {
+.game-stat span,
+.game-result-card p,
+.game-result-stat span {
   color: var(--muted);
 }
 
@@ -245,7 +253,8 @@ img {
 
 .hero-card__meta,
 .info-strip,
-.game-topbar {
+.game-topbar,
+.game-result-stats {
   display: grid;
   gap: 12px;
 }
@@ -256,7 +265,8 @@ img {
 
 .hero-card__meta div,
 .info-strip div,
-.game-stat {
+.game-stat,
+.game-result-stat {
   padding: 12px 14px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.03);
@@ -266,25 +276,43 @@ img {
 .info-strip strong,
 .panel-card strong,
 .referral-card span,
-.game-stat strong {
+.game-stat strong,
+.game-result-stat strong {
   color: var(--accent);
+}
+
+.hero-card__action {
+  margin-top: 14px;
+}
+
+.primary-button,
+.task-card__button,
+.floating-cta__button,
+.secondary-button {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 18px;
+  font-weight: 800;
 }
 
 .primary-button,
 .task-card__button,
 .floating-cta__button {
-  width: 100%;
-  padding: 16px 18px;
-  border-radius: 18px;
   background: linear-gradient(180deg, #eaff64, #b7f20f);
   color: #0d1208;
-  font-weight: 800;
   box-shadow: 0 10px 26px rgba(200, 255, 26, 0.28);
+}
+
+.secondary-button {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .primary-button:disabled,
 .task-card__button:disabled,
-.floating-cta__button:disabled {
+.floating-cta__button:disabled,
+.secondary-button:disabled {
   opacity: 0.62;
   cursor: default;
 }
@@ -300,7 +328,8 @@ img {
 .friend-card,
 .empty-card,
 .error-banner,
-.toast {
+.toast,
+.game-result-card {
   padding: 18px;
   border-radius: 24px;
 }
@@ -428,6 +457,16 @@ img {
   overflow: hidden;
 }
 
+.game-shell--result {
+  display: grid;
+  place-items: center;
+  padding:
+    var(--game-top-offset)
+    calc(max(var(--tg-safe-right), var(--tg-content-right)) + 18px)
+    calc(var(--tg-safe-bottom) + 20px)
+    calc(max(var(--tg-safe-left), var(--tg-content-left)) + 18px);
+}
+
 .game-frame {
   width: 100%;
   max-width: none;
@@ -463,6 +502,30 @@ img {
   background-size: auto, 16px 16px, auto;
   overflow: hidden;
   touch-action: none;
+}
+
+.game-result-screen {
+  width: 100%;
+}
+
+.game-result-card {
+  display: grid;
+  gap: 16px;
+  background: radial-gradient(circle at top, rgba(200, 255, 26, 0.18), transparent 32%), linear-gradient(180deg, rgba(21, 24, 18, 0.96), rgba(10, 12, 10, 0.98));
+}
+
+.game-result-card h2 {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 2.6rem);
+}
+
+.game-result-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.game-result-actions {
+  display: grid;
+  gap: 10px;
 }
 
 .spawn-item {
@@ -556,12 +619,8 @@ img {
   }
 
   .hero-card__meta,
-  .info-strip {
+  .info-strip,
+  .game-result-stats {
     grid-template-columns: 1fr;
   }
 }
-
-
-
-
-

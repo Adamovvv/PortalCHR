@@ -3,11 +3,12 @@ import { claimFarming, claimTask, loadAppData, startFarming, submitGameScore, up
 import { bindTelegramBackButton, getInitData, getInitialTheme, impact, notify, openTelegramLink, setupTelegramChrome } from "./lib/telegram";
 import type { AppLanguage, MiniAppData, TaskItem, ThemeMode } from "./types";
 
-type Screen = "home" | "rating" | "tasks" | "friends" | "game";
+type Screen = "home" | "rating" | "tasks" | "friends" | "game" | "game-result";
 type SpawnItem = { id: number; x: number; y: number; type: "token" | "bomb"; expiresAt: number };
+type GameResultState = { score: number; addedTokens: number; isError: boolean } | null;
 
 type Dictionary = {
-  nav: Record<Exclude<Screen, "game">, string>;
+  nav: Record<Exclude<Screen, "game" | "game-result">, string>;
   loading: string;
   openInsideTelegram: string;
   mainTitle: string;
@@ -30,8 +31,6 @@ type Dictionary = {
   complete: string;
   completed: string;
   open: string;
-  gameTitle: string;
-  gameHint: string;
   gameFinished: string;
   gameSubmitError: string;
   gameReward: string;
@@ -43,6 +42,12 @@ type Dictionary = {
   seconds: string;
   errorLoad: string;
   collectedTokens: string;
+  resultTitle: string;
+  resultSubtitle: string;
+  resultScore: string;
+  resultReward: string;
+  resultDone: string;
+  resultRetry: string;
 };
 
 const text: Record<AppLanguage, Dictionary> = {
@@ -70,8 +75,6 @@ const text: Record<AppLanguage, Dictionary> = {
     complete: "Выполнить",
     completed: "Выполнено",
     open: "Открыть",
-    gameTitle: "Swipe game",
-    gameHint: "Води пальцем по токенам. Бомба отнимает 10 очков.",
     gameFinished: "Игра окончена",
     gameSubmitError: "Не удалось сохранить результат игры.",
     gameReward: "Награда",
@@ -82,7 +85,13 @@ const text: Record<AppLanguage, Dictionary> = {
     farmingEndsIn: "До завершения",
     seconds: "сек",
     errorLoad: "Не удалось загрузить данные",
-    collectedTokens: "Собрано"
+    collectedTokens: "Собрано",
+    resultTitle: "Результат игры",
+    resultSubtitle: "Свайп-сессия завершена. Награда уже учтена в балансе.",
+    resultScore: "Собрано",
+    resultReward: "Получено",
+    resultDone: "На главную",
+    resultRetry: "Сыграть еще"
   },
   en: {
     nav: { home: "Home", rating: "Rating", tasks: "Tasks", friends: "Friends" },
@@ -108,8 +117,6 @@ const text: Record<AppLanguage, Dictionary> = {
     complete: "Complete",
     completed: "Completed",
     open: "Open",
-    gameTitle: "Swipe game",
-    gameHint: "Drag your finger over tokens. Bombs remove 10 points.",
     gameFinished: "Game finished",
     gameSubmitError: "Failed to save game result.",
     gameReward: "Reward",
@@ -120,7 +127,13 @@ const text: Record<AppLanguage, Dictionary> = {
     farmingEndsIn: "Time left",
     seconds: "sec",
     errorLoad: "Failed to load data",
-    collectedTokens: "Collected"
+    collectedTokens: "Collected",
+    resultTitle: "Game result",
+    resultSubtitle: "Your swipe session is complete. The reward is already added to your balance.",
+    resultScore: "Collected",
+    resultReward: "Reward",
+    resultDone: "Back home",
+    resultRetry: "Play again"
   }
 };
 
@@ -143,6 +156,7 @@ export function App() {
   const [gameTimeLeft, setGameTimeLeft] = useState(GAME_DURATION_MS);
   const [gameRunning, setGameRunning] = useState(false);
   const [gameResultText, setGameResultText] = useState<string | null>(null);
+  const [gameResult, setGameResult] = useState<GameResultState>(null);
   const arenaRef = useRef<HTMLDivElement | null>(null);
   const gameIdRef = useRef(1);
   const gameScoreRef = useRef(0);
@@ -207,6 +221,7 @@ export function App() {
     gameScoreRef.current = 0;
     setGameScore(0);
     setGameResultText(null);
+    setGameResult(null);
     setGameRunning(true);
     setGameTimeLeft(GAME_DURATION_MS);
 
@@ -415,12 +430,14 @@ export function App() {
           ...current,
           profile: { ...current.profile, tokenBalance: response.tokenBalance }
         } : current);
-        setGameResultText(`${t.gameFinished}: +${response.addedTokens}`);
-        setScreen("home");
+        setGameResult({ score: scoreToSubmit, addedTokens: response.addedTokens, isError: false });
+        setGameResultText(null);
+        setScreen("game-result");
         notify("success");
       } catch {
+        setGameResult({ score: scoreToSubmit, addedTokens: 0, isError: true });
         setGameResultText(t.gameSubmitError);
-        setScreen("home");
+        setScreen("game-result");
         notify("error");
       }
     })();
@@ -480,6 +497,38 @@ export function App() {
     );
   }
 
+  if (screen === "game-result") {
+    return (
+      <div className="game-shell game-shell--result">
+        <div className="game-result-screen app-frame">
+          <section className="game-result-card">
+            <p className="hero-card__eyebrow">{t.gameFinished}</p>
+            <h2>{t.resultTitle}</h2>
+            <p className="hero-card__text">{gameResult?.isError ? t.gameSubmitError : t.resultSubtitle}</p>
+            <div className="game-result-stats">
+              <div className="game-result-stat">
+                <span>{t.resultScore}</span>
+                <strong>{gameResult?.score ?? 0}</strong>
+              </div>
+              <div className="game-result-stat">
+                <span>{t.resultReward}</span>
+                <strong>{gameResult?.isError ? "0" : `+${gameResult?.addedTokens ?? 0}`}</strong>
+              </div>
+            </div>
+            <div className="game-result-actions">
+              <button type="button" className="primary-button" onClick={() => setScreen("home")}>
+                {t.resultDone}
+              </button>
+              <button type="button" className="secondary-button" onClick={() => setScreen("game")}>
+                {t.resultRetry}
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
       <div className="app-frame">
@@ -518,16 +567,15 @@ export function App() {
                   <strong>{appData.referrals.invitedCount}</strong>
                 </div>
               </div>
+              <button
+                type="button"
+                className="floating-cta__button floating-cta__button--inline hero-card__action"
+                onClick={handleFarmAction}
+                disabled={busyKey === "farm" || farmIsActive}
+              >
+                {farmButtonLabel}
+              </button>
             </div>
-
-            <button
-              type="button"
-              className="floating-cta__button floating-cta__button--inline"
-              onClick={handleFarmAction}
-              disabled={busyKey === "farm" || farmIsActive}
-            >
-              {farmButtonLabel}
-            </button>
 
             <button type="button" className="panel-card panel-card--play panel-card--full" onClick={() => setScreen("game")}>
               <span className="panel-card__label">{t.play}</span>
@@ -654,7 +702,7 @@ export function App() {
       </div>
 
       <nav className="bottom-nav">
-        {(["rating", "tasks", "home", "friends"] as Array<Exclude<Screen, "game">>).map((item) => (
+        {(["rating", "tasks", "home", "friends"] as Array<Exclude<Screen, "game" | "game-result">>).map((item) => (
           <button key={item} type="button" className={`bottom-nav__item ${screen === item ? "is-active" : ""}`} onClick={() => setScreen(item)}>
             <span className="bottom-nav__icon">{navIcon(item)}</span>
             <span>{t.nav[item]}</span>
@@ -697,7 +745,7 @@ function taskIcon(icon: string) {
   return "➤";
 }
 
-function navIcon(screen: Exclude<Screen, "game">) {
+function navIcon(screen: Exclude<Screen, "game" | "game-result">) {
   if (screen === "rating") return "◔";
   if (screen === "tasks") return "☑";
   if (screen === "friends") return "◯";
