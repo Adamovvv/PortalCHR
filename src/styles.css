@@ -1,5 +1,6 @@
 ﻿:root {
   color-scheme: dark;
+  --safe-area-top: env(safe-area-inset-top, 0px);
   --bg: #050505;
   --panel: rgba(18, 22, 12, 0.9);
   --panel-strong: rgba(30, 38, 14, 0.94);
@@ -62,9 +63,8 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
-  padding: 18px 14px 116px;
+  padding: calc(18px + var(--safe-area-top)) 14px 116px;
 }
-
 .app-shell::before {
   content: "";
   position: fixed;
@@ -429,7 +429,7 @@ img {
 .game-topbar {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding: max(8px, env(safe-area-inset-top)) 0 0;
+  padding: calc(10px + var(--safe-area-top)) 0 0;
   border-radius: 0;
   margin: 0;
   border-left: 0;
