@@ -99,3 +99,4 @@ export function impact(style: "light" | "medium" | "heavy" | "rigid" | "soft" = 
 export function notify(type: "error" | "success" | "warning") {
   getTelegramWebApp()?.HapticFeedback?.notificationOccurred?.(type);
 }
+

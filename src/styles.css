@@ -70,7 +70,7 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
-  padding-top: calc(max(var(--tg-safe-top), var(--tg-content-top)) + 44px);
+  padding-top: var(--app-top-offset);
   padding-right: calc(max(var(--tg-safe-right), var(--tg-content-right)) + 14px);
   padding-bottom: calc(var(--tg-safe-bottom) + 92px);
   padding-left: calc(max(var(--tg-safe-left), var(--tg-content-left)) + 14px);
@@ -440,7 +440,7 @@ img {
 .game-topbar {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding-top: calc(max(var(--tg-safe-top), var(--tg-content-top)) + 22px);
+  padding-top: var(--game-top-offset);
   padding-right: max(var(--tg-safe-right), var(--tg-content-right));
   padding-left: max(var(--tg-safe-left), var(--tg-content-left));
   border-radius: 0;
@@ -499,7 +499,6 @@ img {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
-  padding: 10px;
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(13, 15, 13, 0.86);
@@ -561,5 +560,6 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
 
 
