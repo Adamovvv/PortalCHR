@@ -12,14 +12,6 @@
   --danger: #ff5858;
   --bg-glow: radial-gradient(circle at top, rgba(171, 255, 55, 0.18), transparent 32%), radial-gradient(circle at bottom, rgba(255, 213, 64, 0.16), transparent 30%), #050505;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-
-  --sa-top: 0px;
-  --sa-bottom: 0px;
-  --sa-left: 0px;
-  --sa-right: 0px;
-
-  --sa-top-fallback: 44px;     /* notch + status bar */
-  --sa-bottom-fallback: 34px;  /* home indicator */
 }
 
 * {
@@ -70,12 +62,8 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
-
-  /* Было: padding: 18px 14px 116px; */
-  padding-top:    calc(var(--sa-top, var(--sa-top-fallback))    + 18px);
-  padding-right:  calc(var(--sa-right, 0px) + 14px);
-  padding-bottom: calc(var(--sa-bottom, var(--sa-bottom-fallback)) + 116px);
-  padding-left:   calc(var(--sa-left, 0px) + 14px);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(68px + 14px + env(safe-area-inset-bottom, 0px) + 10px);
 }
 
 .app-shell::before {
@@ -442,7 +430,7 @@ img {
 .game-topbar {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding-top: calc(var(--sa-top, var(--sa-top-fallback)) + 8px) !important;
+  padding-top: env(safe-area-inset-top);
   border-radius: 0;
   margin: 0;
   border-left: 0;
@@ -496,25 +484,35 @@ img {
   bottom: 14px;
   transform: translateX(-50%);
   width: min(430px, calc(100% - 28px));
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  padding: 10px;
+  
+  height: 68px;                 /* ← основное изменение */
+  padding: 0 10px;              /* внутренние отступы уменьшаем, т.к. высота фиксирована */
+  
+  display: flex;                /* меняем на flex — удобнее выравнивать по высоте */
+  align-items: center;
+  justify-content: space-between;
+  
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(13, 15, 13, 0.86);
   backdrop-filter: blur(18px);
   z-index: 19;
+  box-sizing: border-box;
 }
 
 .bottom-nav__item {
-  display: grid;
-  gap: 5px;
-  justify-items: center;
-  padding: 10px 6px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;                     /* чуть меньше зазор между иконкой и текстом */
+  height: 100%;
+  padding: 6px 4px;
   border-radius: 18px;
   color: rgba(245, 248, 241, 0.72);
   background: transparent;
+  transition: all 0.18s ease;
 }
 
 .bottom-nav__item.is-active {
