@@ -12,6 +12,9 @@
   --danger: #ff5858;
   --bg-glow: radial-gradient(circle at top, rgba(171, 255, 55, 0.18), transparent 32%), radial-gradient(circle at bottom, rgba(255, 213, 64, 0.16), transparent 30%), #050505;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
 }
 
 * {
@@ -26,6 +29,16 @@ body,
   margin: 0;
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+body,
+html,
+#root,
+.app-shell,
+.game-shell,
+.game-frame {
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
 }
 
 body {
@@ -62,10 +75,7 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
-  padding-top: calc(var(--safe-area-top) + 18px);
-  padding-bottom: calc(116px + var(--safe-area-bottom));
-  padding-left: 14px;
-  padding-right: 14px;
+  padding: 18px 14px 116px;
 }
 
 .app-shell::before {
@@ -92,13 +102,16 @@ img {
   color: var(--muted);
 }
 
+.topbar,
+.game-topbar {
+  padding-top: calc(var(--sat) + 10px) !important;
+}
+
 .topbar {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 10px;
   align-items: center;
-  padding-top: calc(var(--safe-area-top) + 10px);
-  padding-bottom: 12px;
   margin-bottom: 16px;
 }
 
@@ -414,12 +427,6 @@ img {
   margin-bottom: 14px;
 }
 
-.game-shell,
-.game-frame {
-  padding-top: var(--safe-area-top);
-  padding-bottom: var(--safe-area-bottom);
-}
-
 .game-shell {
   position: fixed;
   inset: 0;
@@ -491,8 +498,8 @@ img {
 .bottom-nav {
   position: fixed;
   left: 50%;
-  bottom: calc(14px + var(--safe-area-bottom));
-  padding-bottom: calc(10px + var(--safe-area-bottom));
+  bottom: calc(14px + var(--sab));
+  padding-bottom: calc(10px + var(--sab));
   transform: translateX(-50%);
   width: min(430px, calc(100% - 28px));
   display: grid;
