@@ -13,17 +13,33 @@
   --bg-glow: radial-gradient(circle at top, rgba(171, 255, 55, 0.18), transparent 32%), radial-gradient(circle at bottom, rgba(255, 213, 64, 0.16), transparent 30%), #050505;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 
-  --tg-safe-top: var(--tg-safe-area-inset-top, env(safe-area-inset-top, 0px));
-  --tg-safe-bottom: var(--tg-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
-  --tg-safe-left: var(--tg-safe-area-inset-left, env(safe-area-inset-left, 0px));
-  --tg-safe-right: var(--tg-safe-area-inset-right, env(safe-area-inset-right, 0px));
+  --sat: var(--tg-safe-area-inset-top,    0px);
+  --sab: var(--tg-safe-area-inset-bottom, 0px);
+  --sal: var(--tg-safe-area-inset-left,   0px);
+  --sar: var(--tg-safe-area-inset-right,  0px);
 
-  --tg-content-safe-top: var(--tg-content-safe-area-inset-top, var(--tg-safe-top));
-  --tg-content-safe-bottom: var(--tg-content-safe-area-inset-bottom, var(--tg-safe-bottom));
-  --tg-content-safe-left: var(--tg-content-safe-area-inset-left, var(--tg-safe-left));
-  --tg-content-safe-right: var(--tg-content-safe-area-inset-right, var(--tg-safe-right));
+  /* Если вы работаете в полноэкранном режиме и хотите учитывать панели Telegram */
+  --csat: var(--tg-content-safe-area-inset-top,    var(--sat));
+  --csab: var(--tg-content-safe-area-inset-bottom, var(--sab));
+  --csal: var(--tg-content-safe-area-inset-left,   var(--sal));
+  --csar: var(--tg-content-safe-area-inset-right,  var(--sar));
+}
 
-  --tg-top-offset: 20px;
+/* Удобные утилиты */
+@supports (padding: var(--sat)) {
+  .safe-area-top    { padding-top:    var(--sat);    }
+  .safe-area-bottom { padding-bottom: var(--sab);    }
+  .safe-area-left   { padding-left:   var(--sal);    }
+  .safe-area-right  { padding-right:  var(--sar);    }
+
+  .safe-area-inset {
+    padding: var(--sat) var(--sar) var(--sab) var(--sal);
+  }
+
+  /* Вариант с content-safe-area (часто нужнее в TMA) */
+  .content-safe-area-inset {
+    padding: var(--csat) var(--csar) var(--csab) var(--csal);
+  }
 }
 
 * {
@@ -74,11 +90,10 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
-  padding:
-    calc(18px + var(--tg-content-safe-top) + var(--tg-top-offset))
-    calc(14px + var(--tg-content-safe-right))
-    calc(116px + var(--tg-content-safe-bottom))
-    calc(14px + var(--tg-content-safe-left));
+  padding-top: var(--sat);
+  padding-bottom: calc(116px + var(--sab));   /* ваш текущий 116px + safe area */
+  /* или */
+  padding-bottom: calc(116px + var(--csab));
 }
 
 .app-shell::before {
@@ -109,6 +124,8 @@ img {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 10px;
+  padding-top: var(--sat);
+  padding-top: var(--csat);     /* ← чаще всего именно этот вариант нужен */
   align-items: center;
   margin-bottom: 16px;
 }
@@ -425,6 +442,16 @@ img {
   margin-bottom: 14px;
 }
 
+.game-shell,
+.game-frame,
+.game-arena {
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
+  /* или content-вариант, если игра должна быть под панелями Telegram */
+  padding-top: var(--csat);
+  padding-bottom: var(--csab);
+}
+
 .game-shell {
   position: fixed;
   inset: 0;
@@ -445,11 +472,7 @@ img {
 .game-topbar {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding:
-    calc(8px + var(--tg-content-safe-top) + var(--tg-top-offset))
-    var(--tg-content-safe-right)
-    0
-    var(--tg-content-safe-left);
+  padding: max(8px, env(safe-area-inset-top)) 0 0;
   border-radius: 0;
   margin: 0;
   border-left: 0;
@@ -500,12 +523,13 @@ img {
 .bottom-nav {
   position: fixed;
   left: 50%;
-  bottom: calc(14px + var(--tg-content-safe-bottom));
+  bottom: var(--sab);
+  bottom: var(--csab);          /* ← почти всегда используйте content-safe-area */
+  padding-bottom: var(--sab);
+  /* или */
+  margin-bottom: var(--csab);
   transform: translateX(-50%);
-  width: min(
-    430px,
-    calc(100% - 28px - var(--tg-content-safe-left) - var(--tg-content-safe-right))
-  );
+  width: min(430px, calc(100% - 28px));
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
