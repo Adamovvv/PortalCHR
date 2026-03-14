@@ -12,9 +12,6 @@
   --danger: #ff5858;
   --bg-glow: radial-gradient(circle at top, rgba(171, 255, 55, 0.18), transparent 32%), radial-gradient(circle at bottom, rgba(255, 213, 64, 0.16), transparent 30%), #050505;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-
-  --sat: env(safe-area-inset-top);
-  --sab: env(safe-area-inset-bottom);
 }
 
 * {
@@ -29,16 +26,6 @@ body,
   margin: 0;
   overflow: hidden;
   overscroll-behavior: none;
-}
-
-body,
-html,
-#root,
-.app-shell,
-.game-shell,
-.game-frame {
-  padding-top: var(--sat);
-  padding-bottom: var(--sab);
 }
 
 body {
@@ -100,11 +87,6 @@ img {
   place-items: center;
   padding: 24px;
   color: var(--muted);
-}
-
-.topbar,
-.game-topbar {
-  padding-top: calc(var(--sat) + 10px) !important;
 }
 
 .topbar {
@@ -498,13 +480,13 @@ img {
 .bottom-nav {
   position: fixed;
   left: 50%;
-  bottom: calc(14px + var(--sab));
-  padding-bottom: calc(10px + var(--sab));
+  bottom: 14px;
   transform: translateX(-50%);
   width: min(430px, calc(100% - 28px));
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+  padding: 10px;
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(13, 15, 13, 0.86);
