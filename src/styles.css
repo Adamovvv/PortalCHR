@@ -70,9 +70,9 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
-  padding-top: calc(max(var(--tg-safe-top), var(--tg-content-top)) + 18px);
+  padding-top: calc(max(var(--tg-safe-top), var(--tg-content-top)) + 30px);
   padding-right: calc(max(var(--tg-safe-right), var(--tg-content-right)) + 14px);
-  padding-bottom: calc(max(var(--tg-content-bottom), var(--tg-safe-bottom)) + 116px);
+  padding-bottom: calc(var(--tg-safe-bottom) + 92px);
   padding-left: calc(max(var(--tg-safe-left), var(--tg-content-left)) + 14px);
 }
 
@@ -440,7 +440,7 @@ img {
 .game-topbar {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding-top: calc(max(var(--tg-safe-top), var(--tg-content-top)) + 8px);
+  padding-top: calc(max(var(--tg-safe-top), var(--tg-content-top)) + 14px);
   padding-right: max(var(--tg-safe-right), var(--tg-content-right));
   padding-left: max(var(--tg-safe-left), var(--tg-content-left));
   border-radius: 0;
@@ -493,9 +493,9 @@ img {
 .bottom-nav {
   position: fixed;
   left: 50%;
-  bottom: calc(max(var(--tg-safe-bottom), var(--tg-content-bottom)) + 14px);
+  bottom: calc(var(--tg-safe-bottom) + 6px);
   transform: translateX(-50%);
-  width: min(430px, calc(100% - 28px - max(var(--tg-safe-left), var(--tg-content-left)) - max(var(--tg-safe-right), var(--tg-content-right))));
+  width: min(430px, calc(100% - 28px - var(--tg-safe-left) - var(--tg-safe-right)));
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
@@ -561,3 +561,4 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
